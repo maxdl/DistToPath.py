@@ -1,0 +1,10 @@
+2014-05-14:
+- Fixed DistToPath.pyw.
+- PyExcelerator is again included in the Window binaries.
+2014-05-07:
+- Modified the user interface. It should now show properly also when using OSes
+  other than Windows, and is now also threaded.
+- Options can now be saved in '.disttopath.cfg' in the user's home directory.
+- The input directory is now saved from the previous session in '.disttopath.cfg'.
+- Fixed a bug that prevented the View File dialog from being destroyed when
+  closed.
