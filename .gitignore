@@ -4,6 +4,7 @@
 *.spec
 copygui.bat
 gui/
+.idea/
 
 ### Windows ###
 # Windows image file caches

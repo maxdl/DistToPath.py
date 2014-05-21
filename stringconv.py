@@ -1,24 +1,3 @@
-#
-#    Module      : stringconv.py
-#    Description : Functions related to string conversion
-#
-#    Copyright 2014 Max Larsson <max.larsson@liu.se>
-#
-#    This file is part of DistToPath.
-#
-#    DistToPath is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    DistToPath is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with DistToPath.  If not, see <http://www.gnu.org/licenses/>.
-
 def numDigits(n):
     """Return the number of digits used to represent a number
     """    
