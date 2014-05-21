@@ -9,4 +9,5 @@ Please see the [website](http://www.hu.liu.se/forskning/larsson-max/software) fo
 
 # License
 Copyright 2014 Max Larsson [<max.larsson@liu.se>](mailto:max.larsson@liu.se)
+
 DistToPath is released under the MIT license.
