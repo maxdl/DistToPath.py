@@ -7,7 +7,7 @@ This tool is used in conjunction with its companion ImageJ plugin DistToPath_.ja
 
 Please see the [website](http://www.hu.liu.se/forskning/larsson-max/software) for more information. 
 
-# License
+## License
 Copyright 2014 Max Larsson [<max.larsson@liu.se>](mailto:max.larsson@liu.se)
 
 DistToPath is released under the MIT license.
