@@ -9,22 +9,21 @@
 
 from pyExcelerator import *
 
-class writer(object):
+
+class Writer(object):
     def __init__(self, filename, sheetname="Sheet 1"):
         self.wb = Workbook()
         self.sheet = self.wb.add_sheet(sheetname)
         self.filename = filename
         self.curr_row = 0
 
-
     def writerow(self, row):
         for col, element in enumerate(row):
-            if element != None:
+            if element is not None:
                 self.sheet.write(self.curr_row, col, element)
             else:
                 self.sheet.write(self.curr_row, col, "None")
         self.curr_row += 1
-
 
     def writerows(self, rows):
         for row in rows:
