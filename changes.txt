@@ -1,3 +1,7 @@
+2014-05-26:
+- Fixed Unicode in coordinate files.
+2014-05-23:
+- Major code cleanup; now largely complies with PEP8, for instance.
 2014-05-14:
 - Fixed DistToPath.pyw.
 - PyExcelerator is again included in the Window binaries.

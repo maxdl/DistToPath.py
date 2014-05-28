@@ -520,7 +520,7 @@ class LogQueue:
         self.parent = parent
         self.fn = fn
         self.win = win
-        self.encoding = sys.getfilesystemencoding()
+        self.encoding = "utf-8"
         self.q = Queue.Queue()        
         if self.fn != "":
             self.errstr = "* Error: could not write to log file: %s\n" % self.fn        

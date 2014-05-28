@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import codecs
 import os.path
 import sys
 
@@ -53,7 +54,7 @@ def enum_filename(fn, n):
 def read_file(fname):
     """Open file named fname and read its lines into a list"""
     try:
-        f = open(fname, "r", 0)
+        f = codecs.open(fname, mode="r", encoding="utf-8", buffering=0)
         try:
             s = f.readlines()
         finally:
