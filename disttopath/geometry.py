@@ -305,6 +305,21 @@ class Point(object):
             mindist = -mindist
         return mindist
 
+    def lateral_dist_to_point(self, p2, border):
+        """ Determine lateral distance to a point p2 along profile
+            border. Assume profile border is a closed path.
+        """
+        path = geometry.SegmentedPath()
+        p2_project, p2_seg_project = p2.project_on_closed_path(border)
+        project, seg_project = self.project_on_closed_path(border)
+        path.extend([project, p2_project])
+        if p2_seg_project < seg_project:
+            path.reverse()
+        for n in range(min(p2_seg_project, seg_project) + 1,
+                       max(p2_seg_project, seg_project)):
+            path.insert(len(path) - 1, border[n])
+        length = path.length()
+        return min(length, border.perimeter() - length)
 
 # end of class Point
 
