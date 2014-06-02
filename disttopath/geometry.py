@@ -17,7 +17,8 @@ class Point(object):
     def __str__(self):
         return '(' + str(self.x) + ', ' + str(self.y) + ')'
 
-    def __nonzero__(self):  # true if both x and y are defined
+    def __nonzero__(self):
+        """ True if both x and y are defined """
         if self.x is not None and self.y is not None:
             return True
         else:
@@ -45,9 +46,10 @@ class Point(object):
         return math.sqrt((self.x - q.x) ** 2 + (self.y - q.y) ** 2)
 
     def signed_dist_to_line(self, p, q):
-        """ Calculate signed distance from self to the line defined by p and q.
-            Note that the function does not allow correct comparison of signs
-            between lines parallel to either axis and lines oriented otherwise.
+        """ Calculate signed distance from self to the line defined by
+            p and q. Note that the function does not allow correct
+            comparison of signs between lines parallel to either axis
+            and lines oriented otherwise.
         """
         if p.y == q.y:
             return self.y - p.y
@@ -61,7 +63,8 @@ class Point(object):
 
     def is_within_polygon(self, pol):
         """  Determine whether point p is inside polygon;
-             Uses the crossing number method => works only with simple polygons.
+             Uses the crossing number method => works only with simple
+             polygons.
         """
         if not pol:
             return None
@@ -91,8 +94,8 @@ class Point(object):
             v = Vec(path[n + 1].x - path[n].x, path[n + 1].y - path[n].y)
             d = abs(self.signed_dist_to_line(path[n], path[n + 1]))
             if ((u.project(v).dot(v) >= 0) and (u.project(v).dist(Point(0, 0))
-                                                    <= v.dist(Point(0, 0)))
-                 and d < mindist):
+                                                <= v.dist(Point(0, 0)))
+                    and d < mindist):
                 mindist = d
                 project = u.project(v) + path[n]
                 seg0 = n
@@ -168,8 +171,9 @@ class Point(object):
         return project, seg0
 
     def lateral_dist(self, path):
-        """ Determine lateral distance to center of path. If distance > 1,
-            the projection of the point is on the extension of path.
+        """ Determine lateral distance to center of path. If
+            distance > 1, the projection of the point is on the
+            extension of path.
         """
         subpath = SegmentedPath()
         # need node only
@@ -184,28 +188,31 @@ class Point(object):
             subpath.insert(len(subpath) - 1, path[n])
         return subpath.length()
 
-    def segment_crossing_number(self, path, refp, epsilon=1e-12):
-        """ Return the number of times the line between a point p and and a
+    def segment_crossing_number(self, path, refp):
+        """ Return the number of times the line between a point p and a
             reference point refp crosses a segmented path (path)
         """
         cn = 0
         for n in range(0, len(path) - 1):
             d, t, u = line_intersection_with_params(self, refp, path[n],
                                                     path[n + 1])
-            if d and (0 <= t <= 1):  # is intersection between self and refp?
-                if 0 <= u < 1:  # is intersection within path segment?
+            # is intersection between self and refp?
+            if d and (0 <= t <= 1):
+                # is intersection within path segment?
+                if 0 <= u < 1:
                     cn += 1
-                # if intersecting last segment node, count only if last path
-                # segment; else it would be counted twice
-                elif abs(u - 1) < epsilon:
+                # if intersecting last segment node, count only if last
+                # path segment; else it would be counted twice
+                elif abs(u - 1) < sys.float_info.epsilon:
                     if n == len(path) - 2:
                         cn += 1
-                    # if the line tangents the node between two segments, i e
-                    # does not cross the path, regard it as no intersection;
-                    # thus, decrement cn by 1 now (net change will be 0)
+                    # if the line tangents the node between two
+                    # segments, i e does not cross the path, regard it
+                    # as no intersection; thus, decrement cn by 1 now
+                    # (net change will be 0)
                     elif (path[n].signed_dist_to_line(path[n + 1], refp) *
-                              path[n + 2].
-                                      signed_dist_to_line(path[n + 1],
+                          path[n + 2].
+                                  signed_dist_to_line(path[n + 1],
                                                           refp)) > 0:
                         cn -= 1
                 elif (u < 0 and n == 0) or (u > 1 and n == len(path) - 2):
@@ -213,11 +220,12 @@ class Point(object):
         return cn
 
     def dist_to_segment(self, path, n):
-        """Calculate distance from the point to segment n in path; First,
-           determine if the orthogonal projection of the point on the path
-           segment is between the nodes of ("on") the segment - if not, return
-           distance to the closest node. Return distance and a flag which is
-           set to 0 if "off" the first or last node of the path, otherwise to 1
+        """Calculate distance from the point to segment n in path;
+           First, determine if the orthogonal projection of the point
+           on the path segment is between the nodes of ("on") the
+           segment - if not, return distance to the closest node.
+           Return distance and a flag which is set to 0 if "off" the
+           first or last node of the path, otherwise to 1
         """
         u = Vec(self.x - path[n].x, self.y - path[n].y)
         v = Vec(path[n + 1].x - path[n].x, path[n + 1].y - path[n].y)
@@ -241,50 +249,59 @@ class Point(object):
         for n in range(-1, len(m) - 1):
             if (m[n].x != -1) and (m[n + 1].x != -1):
                 on_this_seg, d = self.dist_to_segment(m, n)
-                if d <= mindist:  # smallest distance so far...
+                # smallest distance so far...
+                if d <= mindist:
                     mindist = d
                     if on_this_seg or dont_care_if_on_or_off_seg:
-                        on_m = True  # least distance and "on" segment (not
+                        # least distance and "on" segment (not
                         # completely true; see dist_to_segment())
+                        on_m = True
                     else:
-                        on_m = False  # least distance but "off" segment
+                        # least distance but "off" segment
+                        on_m = False
         if not on_m:
-            return None  # shouldn't happen because m is closed
+            # shouldn't happen because m is closed
+            return None
         return mindist
 
     def perpend_dist(self, m, negloc=None, posloc=None,
                      dont_care_if_on_or_off_seg=False):
-        """" Calculate distance from the point to a path m; the polarity can
-             be defined by negloc or posloc, which are points defined to have
-             a negative and a positive distance to the path, respectively. If
-             neither negloc nor posloc is defined, absolute distance is
-             returned.
+        """" Calculate distance from the point to a path m; the
+             polarity can be defined by negloc or posloc, which are
+             points defined to have a negative and a positive distance
+             to the path, respectively. If neither negloc nor posloc is
+             defined, absolute distance is returned.
         """
         mindist = float(sys.maxint)
         on_m = False
         for n in range(0, len(m) - 1):
             if (m[n].x != -1) and (m[n + 1].x != -1):
                 on_this_seg, d = self.dist_to_segment(m, n)
-                if d <= mindist:  # smallest distance so far...
+                if d <= mindist:
+                    # smallest distance so far...
                     mindist = d
                     if on_this_seg or dont_care_if_on_or_off_seg:
-                        on_m = True  # least distance and "on" segment (not
-                                     # completely true; see dist_to_segment())
+                        # least distance and "on" segment (not
+                        # completely true; see dist_to_segment())
+                        on_m = True
                     else:
-                        on_m = False  # least distance but "off" segment
+                        # least distance but "off" segment
+                        on_m = False
         if not on_m:
             return None
-        # If polarity (posloc or negloc) is defined, we say that points on the
-        # positive side of the path have positive distances to the path, while
-        # other points have negative distances. To determine this, we count the
-        # number of path segments dissected by the line between the particle and
-        # negloc (posloc). Even (odd) number => the particle and negloc (posloc)
-        # are on the same side of the path; odd number => different side.
+        # If polarity (posloc or negloc) is defined, we say that points
+        # on the positive side of the path have positive distances to
+        # the path, while other points have negative distances. To
+        # determine this, we count the number of path segments
+        # dissected by the line between the particle and negloc
+        # (posloc). Even (odd) number => the particle and negloc
+        # (posloc) are on the same side of the path; odd number =>
+        # different side.
         if (negloc is not None and
                         self.segment_crossing_number(m, negloc) % 2 == 0):
             mindist = -mindist
         elif (posloc is not None and
-                          self.segment_crossing_number(m, posloc) % 2 != 0):
+              self.segment_crossing_number(m, posloc) % 2 != 0):
             mindist = -mindist
         return mindist
 
@@ -318,7 +335,7 @@ class Vec(Point):
 
 
 class SegmentedPath(list):
-    def __init__(self, pointli=[]):
+    def __init__(self, pointli):
         try:
             self.extend([Point(p.x, p.y) for p in pointli])
         except (AttributeError, IndexError):
@@ -328,12 +345,12 @@ class SegmentedPath(list):
         """Return length of a segmented path (assume path is open)"""
         if len(self) == 0:
             return 0.0
-        l = 0.0
+        length = 0.0
         for n in range(0, len(self) - 1):
             if (self[n].x != -1) and (self[n + 1].x != -1):
-                l += math.sqrt((self[n + 1].x - self[n].x) ** 2 +
-                               (self[n + 1].y - self[n].y) ** 2)
-        return l
+                length += math.sqrt((self[n + 1].x - self[n].x) ** 2 +
+                                    (self[n + 1].y - self[n].y) ** 2)
+        return length
 
     def perimeter(self):
         """Return length of a segmented path (assume path is closed)"""
@@ -341,17 +358,19 @@ class SegmentedPath(list):
                                          (self[-1].y - self[0].y) ** 2)
 
     def center_point(self):
-        """Return center point of a segmented path (assume path is open)"""
+        """ Return center point of a segmented path (assume path is
+            open)
+        """
         if len(self) == 1:
             return Point(self[0].x, self[0].y)
         r = self.length() / 2
-        l = 0.0
+        length = 0.0
         for n in range(0, len(self) - 1):
             v = Vec(self[n + 1].x - self[n].x, self[n + 1].y - self[n].y)
-            l += v.length()
-            if l >= r:
+            length += v.length()
+            if length >= r:
                 break
-        return self[n] + ((v.length() - (l - r)) / v.length()) * v
+        return self[n] + ((v.length() - (length - r)) / v.length()) * v
 
     def signed_area(self):
         """Return signed area of polygon (assume path is closed)"""
@@ -371,7 +390,8 @@ class SegmentedPath(list):
 
     def contains(self, p):
         """  Determine whether point p is inside polygon (assumes closed path);
-             Uses the crossing number method => works only with simple polygons.
+             Uses the crossing number method => works only with simple
+             polygons.
         """
         if not p:
             return None

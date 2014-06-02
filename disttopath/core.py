@@ -56,8 +56,8 @@ class Particle(geometry.Point):
         if dist_to_path is None:
             if self.ptype == "particle":
                 profile_warning(profile, "Unable to project on path \n"
-                                        "   => skipping particle at"
-                                        " %s" % self)
+                                         "   => skipping particle at"
+                                         " %s" % self)
             self.skipped = True
             profile.nskipped[self.ptype] += 1
             return
