@@ -71,7 +71,7 @@ class Point(object):
         cn = 0
         for n in range(-1, len(pol) - 1):
             if ((pol[n].y <= self.y < pol[n + 1].y)
-                 or ((pol[n].y > self.y) and pol[n + 1].y <= self.y)):
+                    or ((pol[n].y > self.y) and pol[n + 1].y <= self.y)):
                 if (line_intersection(pol[n], pol[n + 1], self,
                                       Point(self.x - 1, self.y)).x > self.x):
                     cn += 1
@@ -122,8 +122,8 @@ class Point(object):
             v = Vec(path[n + 1].x - path[n].x, path[n + 1].y - path[n].y)
             d = abs(self.signed_dist_to_line(path[n], path[n + 1]))
             if ((u.project(v).dot(v) >= 0) and (u.project(v).dist(Point(0, 0))
-                                                    <= v.dist(Point(0, 0)))
-                 and d < mindist):
+                                                <= v.dist(Point(0, 0)))
+                    and d < mindist):
                 mindist = d
                 project = u.project(v) + path[n]
                 seg0 = n
@@ -150,8 +150,8 @@ class Point(object):
             v = Vec(path[n + 1].x - path[n].x, path[n + 1].y - path[n].y)
             d = abs(self.signed_dist_to_line(path[n], path[n + 1]))
             if ((u.project(v).dot(v) >= 0) and (u.project(v).dist(Point(0, 0))
-                                                    <= v.dist(Point(0, 0)))
-                 and d < mindist):
+                                                <= v.dist(Point(0, 0)))
+                    and d < mindist):
                 mindist = d
                 project = u.project(v) + path[n]
                 seg0 = n
@@ -211,8 +211,7 @@ class Point(object):
                     # as no intersection; thus, decrement cn by 1 now
                     # (net change will be 0)
                     elif (path[n].signed_dist_to_line(path[n + 1], refp) *
-                          path[n + 2].
-                                  signed_dist_to_line(path[n + 1],
+                          path[n + 2].signed_dist_to_line(path[n + 1],
                                                           refp)) > 0:
                         cn -= 1
                 elif (u < 0 and n == 0) or (u > 1 and n == len(path) - 2):
@@ -230,7 +229,7 @@ class Point(object):
         u = Vec(self.x - path[n].x, self.y - path[n].y)
         v = Vec(path[n + 1].x - path[n].x, path[n + 1].y - path[n].y)
         if (u.project(v).dot(v) >= 0) and (u.project(v).dist(Point(0, 0)) <=
-                                               v.dist(Point(0, 0))):
+                                           v.dist(Point(0, 0))):
             return True, abs(self.signed_dist_to_line(path[n], path[n + 1]))
         else:  # So, not on segment.
             d0, d1 = abs(self.dist(path[n])), abs(self.dist(path[n + 1]))
@@ -298,7 +297,7 @@ class Point(object):
         # (posloc) are on the same side of the path; odd number =>
         # different side.
         if (negloc is not None and
-                        self.segment_crossing_number(m, negloc) % 2 == 0):
+                self.segment_crossing_number(m, negloc) % 2 == 0):
             mindist = -mindist
         elif (posloc is not None and
               self.segment_crossing_number(m, posloc) % 2 != 0):
@@ -309,7 +308,7 @@ class Point(object):
         """ Determine lateral distance to a point p2 along profile
             border. Assume profile border is a closed path.
         """
-        path = geometry.SegmentedPath()
+        path = SegmentedPath()
         p2_project, p2_seg_project = p2.project_on_closed_path(border)
         project, seg_project = self.project_on_closed_path(border)
         path.extend([project, p2_project])
@@ -350,7 +349,9 @@ class Vec(Point):
 
 
 class SegmentedPath(list):
-    def __init__(self, pointli):
+    def __init__(self, pointli=None):
+        if pointli is None:
+            pointli = []
         try:
             self.extend([Point(p.x, p.y) for p in pointli])
         except (AttributeError, IndexError):
@@ -502,6 +503,7 @@ class SegmentedPath(list):
     def is_simple_polygon(self):
         """ Makes sure that the closed path self is a simple polygon,
             ie does not intersect with itself.
+
             Uses the naive algorithm of checking every segment against
             every other segment.
         """
@@ -527,7 +529,7 @@ class SegmentedPath(list):
         return True
 
     def overlaps_polygon(self, path):
-        """ Determines whether polygon self and polygon path overlap
+        """ Determines whether polygon self and polygon path overlap.
         """
         if self.is_within_polygon(path) or path.is_within_polygon(self):
             return True
@@ -585,7 +587,7 @@ def line_intersection(a, b, c, d):
 
 
 def segment_intersection(a, b, c, d):
-    """determine the intersection point between the line segments ab and cd
+    """Determine the intersection point between the line segments ab and cd
        Return (None, None) if lines are parallel or coincident, or intersection
        is on the extension of either segment
     """
@@ -597,8 +599,7 @@ def segment_intersection(a, b, c, d):
 
 
 def segments_coincide(a, b, c, d):
-    """
-    """
+    """Return True if segments coincide"""
     denominator = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x)
     numerator = (a.y - c.y) * (d.x - c.x) - (a.x - c.x) * (d.y - c.y)
     if denominator == numerator == 0:
@@ -608,8 +609,7 @@ def segments_coincide(a, b, c, d):
 
 
 def segments_intersect_or_coincide(a, b, c, d):
-    """ Return True if segments intersect or coincide
-    """
+    """Return True if segments intersect or coincide"""
 
     def overlapping():
         if ((c.x < a.x < d.x) or (c.x < b.x < d.x) or
@@ -635,9 +635,10 @@ def segments_intersect_or_coincide(a, b, c, d):
 
 
 def convex_hull(pointli):
-    """ Determine the convex hull of the points in pointli.
-        Uses Graham's algorithm after O'Rourke (1998).
-        Returns a SegmentedPath.
+    """Determine the convex hull of the points in pointli.
+
+    Uses Graham's algorithm after O'Rourke (1998).
+    Returns a SegmentedPath.
     """
 
     def signed_area(a, b, c):

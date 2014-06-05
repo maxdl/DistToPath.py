@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import with_statement
-#import sys
+import sys
 import os.path
 import time
 from core import *
 import geometry
-from file_io import *
+import file_io
 import version
 import stringconv
 
@@ -28,17 +28,8 @@ def save_output(profileli, opt):
     def m(x, pixelwidth):
         return geometry.to_metric_units(x, pixelwidth)
 
-# def m2(x, pixelwidth): 
-#         return geometry.to_metric_units(x, pixelwidth**2)  # for area units...
-#     
-#     def m_inv(x):
-#         try:
-#             return 1 / m(1 / x)
-#         except (TypeError, ZeroDivisionError):
-#             return None
-
     def write_session_summary():
-        with FileWriter("session.summary", opt) as f:
+        with file_io.FileWriter("session.summary", opt) as f:
             f.writerow(["%s version:" % version.title,
                        "%s (Last modified %s %s, %s)"
                        % ((version.version,) + version.date)])
@@ -65,45 +56,43 @@ def save_output(profileli, opt):
                 f.writerows([[fn] for fn in err_fli])
 
     def write_profile_summary():
-        with FileWriter("profile summary", opt) as f:
+        with file_io.FileWriter("profile summary", opt) as f:
             f.writerow(["Path length",                       
                         "Particles (total)",
                         "Positive particles",
                         "Positive shell particles",
                         "Negative shell particles",
                         "Shell particles positive or within %s %s of path"
-                            % (opt.spatial_resolution, 
-                               eval_proli[0].metric_unit),        
+                        % (opt.spatial_resolution,
+                           eval_proli[0].metric_unit),
                         "Particles within %s %s of path" 
-                            % (opt.spatial_resolution, 
-                               eval_proli[0].metric_unit),
+                        % (opt.spatial_resolution,
+                           eval_proli[0].metric_unit),
                         "Profile id",
                         "Input file",
                         "Comment"])
             f.writerows([[m(pro.path.length(), pro.pixelwidth), 
                           len(pro.pli),
                           len([p for p in pro.pli if p.dist_to_path >= 0]),
+                          len([p for p in pro.pli if p.is_within_shell
+                               and p.dist_to_path >= 0]),
                           len([p for p in pro.pli if p.is_within_shell 
-                                                   and p.dist_to_path >= 0]),
-                          len([p for p in pro.pli if p.is_within_shell 
-                                                   and p.dist_to_path < 0]),
+                               and p.dist_to_path < 0]),
                           len([p for p in pro.pli 
                                if (p.is_within_shell 
                                    and (p.dist_to_path >= 0))
-                                or p.is_assoc_with_path]),
+                               or p.is_assoc_with_path]),
                           len([p for p in pro.pli if p.is_assoc_with_path]),
                           pro.id,
                           os.path.basename(pro.inputfn),
-                          pro.comment] 
-                          for pro in eval_proli])
+                          pro.comment] for pro in eval_proli])
                       
     def write_particle_summary():
-        with FileWriter("particle.summary", opt) as f:
+        with file_io.FileWriter("particle.summary", opt) as f:
             f.writerow(["Particle number (as appearing in input file)", 
                         "Perpendicular distance to path", 
                         "Lateral distance to center of path", 
-                        "Lateral distance to center of path"
-                            " / path radius",
+                        "Lateral distance to center of path / path radius",
                         "Particle associated w/ path",
                         #"Nearest neighbour",
                         "Path length",
@@ -119,11 +108,11 @@ def save_output(profileli, opt):
                           m(pro.path.length(), pro.pixelwidth),
                           pro.id,
                           os.path.basename(pro.inputfn), 
-                          pro.comment]
-                          for pro in eval_proli for n, p in enumerate(pro.pli)])
+                          pro.comment] for pro in eval_proli for n, p in
+                         enumerate(pro.pli)])
             
     def write_random_summary():
-        with FileWriter("random.summary", opt) as f:
+        with file_io.FileWriter("random.summary", opt) as f:
             f.writerow(["Point number (as appearing in input file)", 
                         "Perpendicular distance to path", 
                         "Lateral distance to center of path", 
@@ -149,12 +138,11 @@ def save_output(profileli, opt):
                           for n, p in enumerate(pro.randomli)])
 
     def write_grid_summary():
-        with FileWriter("grid.summary", opt) as f:
+        with file_io.FileWriter("grid.summary", opt) as f:
             f.writerow(["Point number (as appearing in input file)", 
                         "Perpendicular distance to path", 
                         "Lateral distance to center of path", 
-                        "Lateral distance to center of path"
-                            " / path radius",
+                        "Lateral distance to center of path / path radius",
                         "Particle associated w/ path",
                         #"Nearest neighbour",
                         "Path length",
@@ -171,11 +159,11 @@ def save_output(profileli, opt):
                           pro.id,
                           os.path.basename(pro.inputfn), 
                           pro.comment]
-                          for pro in eval_proli
-                          for n, p in enumerate(pro.gridli)])
+                         for pro in eval_proli
+                         for n, p in enumerate(pro.gridli)])
             
     def write_interparticle_summary():
-        with FileWriter("interparticle.summary", opt) as f:        
+        with file_io.FileWriter("interparticle.summary", opt) as f:        
             f.writerow(["P1", "P2", "Distance", "Input file"])
             for pro in eval_proli:
                 n = 0
@@ -210,10 +198,22 @@ def save_output(profileli, opt):
     if opt.interparticleSummary:
         write_interparticle_summary()
 
-    
+
+def reset_options(opt):
+    """ Deletes certain options that should always be set anew for each run
+        (each time the "Start" button is pressed)
+    """
+    if hasattr(opt, "metric_unit"):
+        delattr(opt, "metric_unit")
+    if hasattr(opt, "use_grid"):
+        delattr(opt, "use_grid")
+    if hasattr(opt, "use_random"):
+        delattr(opt, "use_random")
+
+
 def show_options(opt):
-    sys.stdout.write("%s version: %s (Last modified %s %s, %s)\n" 
-                      % ((version.title, version.version) + version.date))                           
+    sys.stdout.write("{} version: {} (Last modified {} {}, {})\n".format(
+                     version.title, version.version, *version.date))
     sys.stdout.write("Output file format: %s\n" % opt.output_file_format)
     sys.stdout.write("Suffix of output files: %s\n"
                      % opt.output_filename_suffix)
@@ -248,7 +248,7 @@ def main_proc(parent, opt):
     """ Process profile data files
     """
     
-    def remove_duplicate_filenames_(fli):
+    def remove_duplicate_filenames(fli):
         """ Remove duplicate filenames in input file list
         """
         for f in fli:
@@ -262,10 +262,10 @@ def main_proc(parent, opt):
         return 0                 
     i, n = 0, 0
     profileli = []
-    sys.stdout.write("--- Session started %s local time ---\n" 
-                      % time.ctime())
-    remove_duplicate_filenames_(opt.input_file_list)
+    sys.stdout.write("--- Session started %s local time ---\n" % time.ctime())
+    remove_duplicate_filenames(opt.input_file_list)
     get_output_format(opt)
+    reset_options(opt)
     show_options(opt)
     while True:
         if i < len(opt.input_file_list):
@@ -295,8 +295,7 @@ def main_proc(parent, opt):
     errfli = [pro.inputfn for pro in profileli if pro.errflag]
     warnfli = [pro.inputfn for pro in profileli if pro.warnflag]
     if errfli:
-        sys.stdout.write("\n%s input %s generated one or more "
-                         "errors:\n"
+        sys.stdout.write("\n%s input %s generated one or more errors:\n"
                          % (stringconv.plurality("This", len(errfli)),
                             stringconv.plurality("file", len(errfli))))
         sys.stdout.write("%s\n" % "\n".join([fn for fn in errfli]))

@@ -50,5 +50,3 @@ class Writer(object):
             xls.py module (xls.writer objects need to be explicitly closed)
         """
         pass
-
-

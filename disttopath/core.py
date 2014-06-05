@@ -11,9 +11,12 @@ import file_io
 
 
 class Particle(geometry.Point):
-    def __init__(self, x, y, ptype=""):
-        geometry.Point.__init__(self, x, y)
-        self.__skipped = False
+    def __init__(self, x=None, y=None, ptype=""):
+        if isinstance(x, geometry.Point):
+            geometry.Point.__init__(self, x.x, x.y)
+        else:
+            geometry.Point.__init__(self, x, y)        
+        self.skipped = False
         self.ptype = ptype
         self.dist_to_path = None
         self.lateral_dist_path = None
@@ -22,18 +25,10 @@ class Particle(geometry.Point):
         self.is_within_shell = None
         self.nearest_neighbour = geometry.Point()
         
-    def skip(self, skipped):
-        self.__skipped = skipped
-    
-    def is_skipped(self):
-        return self.__skipped
-    
-    skipped = property(is_skipped, skip)            
-
-    def __is_within_hole(self, syn):
+    def __is_within_hole(self, profile):
         """  Determine whether self is inside a profile hole
         """                
-        for h in syn.holeli:
+        for h in profile.holeli:
             if self.is_within_polygon(h):
                 return True
         return False

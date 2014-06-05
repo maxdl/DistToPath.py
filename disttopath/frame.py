@@ -7,6 +7,7 @@ import threading
 import time
 import traceback
 import wx
+import core
 import file_io
 import gui
 import main
@@ -18,12 +19,13 @@ class Frame(gui.MainFrame):
     def __init__(self, parent):
         gui.MainFrame.__init__(self, parent)
         self.SetTitle(version.title)
-        self.SetIcon(wx.Icon(version.icon, wx.BITMAP_TYPE_ICO))  
+        self.SetIcon(wx.Icon(version.icon, wx.BITMAP_TYPE_ICO))
+        self.set_win7_taskbar_icon()
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.set_input_file_list_ctrl_columns(self.InputFileListCtrl)
         dt = FileDropTarget(self)
         self.InputFileListCtrl.SetDropTarget(dt)
-        self.opt = main.OptionData()
+        self.opt = core.OptionData()
         self.configfn = os.path.normpath(os.path.expanduser('~/.%s.cfg'
                                          % version.title.lower()))
         self.log = None
@@ -32,6 +34,16 @@ class Frame(gui.MainFrame):
         self.load_options_from_config()
         self.set_options_in_ui()
         self.Fit()
+
+    @staticmethod
+    def set_win7_taskbar_icon():
+        """ A hack to make the icon visible in the taskbar in Windows 7.
+            From http://stackoverflow.com/a/1552105/674475.
+        """
+        if sys.platform == "win32":
+            import ctypes
+            appid = 'company.product.subproduct.version'  # arbitrary string
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
 
     def OnAddFile(self, event):
         dlg = wx.FileDialog(self, "Choose a file", os.getcwd(), "", "*%s"
@@ -82,7 +94,7 @@ class Frame(gui.MainFrame):
     def OnSetOptionsAsDefault(self, event):
         if self.save_options_to_config():
             self.StatusBar.SetStatusText("Current options saved to '%s'." 
-                                          % self.configfn)
+                                         % self.configfn)
 
     def OnStart(self, event):
         if self.InputFileListCtrl.GetItemCount() == 0:
@@ -102,8 +114,8 @@ class Frame(gui.MainFrame):
                                 len(self.opt.input_file_list) + 2,
                                 parent=self,
                                 style=wx.PD_ELAPSED_TIME |
-                                      wx.PD_REMAINING_TIME
-                                      | wx.PD_CAN_ABORT)
+                                      wx.PD_REMAINING_TIME |
+                                      wx.PD_CAN_ABORT)
         pthread = ProcessThread(self.opt)            
         pthread.start()
         while pthread.isAlive() or not pthread.process_queue.empty():
@@ -244,13 +256,11 @@ class Frame(gui.MainFrame):
         set_option('shell_width')
         set_dict_option('outputs')
         try:
-            f = open(self.configfn, 'wb')
-            config.write(f)
+            with open(self.configfn, 'wb') as f:
+                config.write(f)
         except IOError:
             self.show_warning("Configuration file\n(%s)\ncould not be saved."
                               % self.configfn)
-        finally:
-            f.close()
 
     def load_options_from_config(self):
 
@@ -260,7 +270,7 @@ class Frame(gui.MainFrame):
                               % (getattr(self.opt, invalid_opt), invalid_opt,
                                  self.configfn))
 
-        def check_str_option(opt, valid_strings=[]):
+        def check_str_option(opt, valid_strings=()):
             if getattr(self.opt, opt) not in valid_strings:
                 show_invalid_option_warning(opt)
                 setattr(self.opt, opt, getattr(defaults, opt))
@@ -284,6 +294,7 @@ class Frame(gui.MainFrame):
 
         def check_bool_dict_option(opt):
             optdict = getattr(self.opt, opt)
+            defaultdict = getattr(defaults, opt)
             for key, val in optdict.items():
                 optstr = '.'.join([opt, key.replace(" ", "_")])
                 if not key in getattr(defaults, opt).keys():
@@ -296,7 +307,7 @@ class Frame(gui.MainFrame):
                     self.show_warning("Invalid value '%s' for option '%s' in "
                                       "configuration file '%s'.\nUsing default "
                                       "value." % (val, optstr, self.configfn))
-                    optdict[key] = defaults[key]
+                    optdict[key] = defaultdict[key]
 
         config = ConfigParser.ConfigParser()
         if not os.path.exists(self.configfn):
@@ -309,7 +320,7 @@ class Frame(gui.MainFrame):
         if not config.has_section('Options'):
             return     # No options present in config file; silently use
                        # default options
-        defaults = main.OptionData()
+        defaults = core.OptionData()
         for option in config.options('Options'):
             if '.' in option:
                 option_dict, option_key = option.split('.', 1)
@@ -322,10 +333,10 @@ class Frame(gui.MainFrame):
                     pass   # So, attribute is invalid, but continue silently
             else:
                 setattr(self.opt, option, config.get('Options', option, 0))
-        check_str_option('output_file_format', ['excel', 'csv'])
-        check_str_option('csv_delimiter', ['comma', 'tab'])
-        check_str_option('action_if_output_file_exists', ['enumerate',
-                                                          'overwrite'])
+        check_str_option('output_file_format', ('excel', 'csv'))
+        check_str_option('csv_delimiter', ('comma', 'tab'))
+        check_str_option('action_if_output_file_exists', ('enumerate',
+                                                          'overwrite'))
         check_bool_option('output_filename_date_suffix')
         check_int_option('spatial_resolution', lower=0, upper=1000)
         check_int_option('shell_width', lower=0, upper=1000)
@@ -405,9 +416,10 @@ class Frame(gui.MainFrame):
             return
         c = self.InputFileListCtrl.GetItemCount()
         n = 0
+        fn = ""
         for fn in fli:
             if (os.path.isfile(fn) and
-                        os.path.splitext(fn)[1] == self.opt.input_filename_ext):
+                    os.path.splitext(fn)[1] == self.opt.input_filename_ext):
                 self.InputFileListCtrl.InsertStringItem(c + n,
                                                         os.path.basename(fn))
                 self.InputFileListCtrl.SetStringItem(c + n, 1,
@@ -416,8 +428,8 @@ class Frame(gui.MainFrame):
             elif os.path.isdir(fn):
                 for fn2 in os.listdir(fn):
                     if (os.path.isfile(os.path.join(fn, fn2)) and
-                                os.path.splitext(fn2)[1] ==
-                                    self.opt.input_filename_ext):
+                            os.path.splitext(fn2)[1] ==
+                            self.opt.input_filename_ext):
                         self.InputFileListCtrl.InsertStringItem(c + n, fn2)
                         self.InputFileListCtrl.SetStringItem(c + n, 1, fn)
                         n += 1
@@ -452,7 +464,8 @@ class Frame(gui.MainFrame):
                     else:
                         f = open(logfn, "a", 0)
                         f.close()
-                else:   # ok, so file doesn't exist but check if name is valid
+                # ok, so file doesn't exist but check if name is valid
+                else:
                     f = open(logfn, "w", 0)
                     f.close()
             except IOError:
