@@ -1,2 +1,5 @@
-include README.md
-include disttopath.ico
+include README.rst
+include LICENSE
+include ez_setup.py
+include disttopath *.py *.pyw
+include disttopath/pd.ico

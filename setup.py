@@ -4,21 +4,15 @@
 from setuptools import setup, find_packages
 from os.path import join, dirname
 
-PACKAGE = "disttopath"
-NAME = "DistToPath"
-DESCRIPTION = ""
-AUTHOR = "Max Larsson"
-AUTHOR_EMAIL = "max.larsson@liu.se"
-URL = "http://www.hu.liu.se/forskning/larsson-max/software"
-VERSION = __import__(PACKAGE).__version__
+__version__ = __import__("disttopath.version").version
 
 setup(
     name="DistToPath",
-    version=__import__(PACKAGE).__version__,
+    version=__version__,
     description="Tool for analysis of immunogold labelling",
     long_description=open(join(dirname(__file__), "README.md")).read(),
-    author=AUTHOR,
-    author_email=AUTHOR_EMAIL,
+    author="Max Larsson",
+    author_email="max.larsson@liu.se",
     license="MIT",
     url="http://www.hu.liu.se/forskning/larsson-max/software",
     packages=find_packages(),
