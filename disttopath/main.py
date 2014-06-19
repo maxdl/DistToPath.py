@@ -244,26 +244,22 @@ def get_output_format(opt):
         opt.output_filename_suffix += "." + opt.output_filename_other_suffix
       
 
-def main_proc(parent, opt):
+def main_proc(parent):
     """ Process profile data files
     """
-    
-    def remove_duplicate_filenames(fli):
-        """ Remove duplicate filenames in input file list
-        """
-        for f in fli:
-            if fli.count(f) > 1:
-                sys.stdout.write("Duplicate input filename %s:\n   => " 
-                                 "removing first occurrence in list\n" % f)
-                fli.remove(f)    
-    
+    opt = parent.opt
     if not opt.input_file_list:
         sys.stdout.write("No input files.\n")
         return 0                 
     i, n = 0, 0
     profileli = []
     sys.stdout.write("--- Session started %s local time ---\n" % time.ctime())
-    remove_duplicate_filenames(opt.input_file_list)
+    # Remove duplicate filenames
+    for f in opt.input_file_list:
+        if opt.input_file_list.count(f) > 1:
+            sys.stdout.write("Duplicate input filename %s:\n   => "
+                             "removing first occurrence in list\n" % f)
+            opt.input_file_list.remove(f)
     get_output_format(opt)
     reset_options(opt)
     show_options(opt)

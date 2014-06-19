@@ -520,7 +520,7 @@ class ProcessThread(threading.Thread):
     # noinspection PyBroadException
     def run(self):
         try:
-            self.exitcode = main.main_proc(self, self.opt)
+            self.exitcode = main.main_proc(self)
         except:  # yes, I do want to catch everything
             exc_str = "".join(traceback.format_exception(sys.exc_type,
                                                          sys.exc_value,
