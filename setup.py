@@ -21,9 +21,10 @@ setup(
     packages=find_packages(),
     entry_points={
     'console_scripts':
+        ['DistToPath = disttopath.DistToPath:main'],
+    'gui_scripts':
         ['DistToPath = disttopath.DistToPath:main']
     },
-    data_files=[('disttopath', ['disttopath/dtp.ico'])],
+    data_files=[('disttopath', ['disttopath/disttopath.ico'])],
     install_requires=['pyexcelerator']    
-    ]
 )
