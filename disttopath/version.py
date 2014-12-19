@@ -3,7 +3,7 @@
 import os.path
 import sys
 
-version = "1.0.1"
+version = "1.0.2"
 date = ("December", "19", "2014")
 title = "DistToPath"
 author = "Max Larsson"
