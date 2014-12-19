@@ -179,7 +179,7 @@ class ProfileData:
             elif s.upper() == "HOLE":
                 self.holeli.append(
                     geometry.SegmentedPath(self.__get_coords(li, "hole")))
-            elif s.upper() == "PARTICLES":
+            elif s.upper() in ("POINTS", "PARTICLES"):
                 pli = self.__get_coords(li, "particle")
                 for p in pli: 
                     self.pli.append(Particle(p.x, p.y, ptype="particle"))
