@@ -99,7 +99,7 @@ class ProfileData:
         self.comment = ""
         self.pixelwidth = None
         self.metric_unit = ""
-        self.posloc = geometry.Point()
+        self.posloc = None
         self.path = geometry.SegmentedPath()
         self.warnflag = False
         self.errflag = False             
@@ -218,21 +218,42 @@ class ProfileData:
         except AttributeError:
             raise ProfileError(self, "Metric unit not found in input file")
         if self.posloc:
-            sys.stdout.write("  Polarity: defined\n")
+            if not hasattr(self.opt, "use_polarity") or self.opt.use_polarity:
+                sys.stdout.write("  Polarity: defined.\n")
+                self.opt.use_polarity = True
+            elif hasattr(self.opt, "use_polarity") and not self.opt.use_polarity:
+                raise ProfileError(self, "Polarity defined but not expected")
         else:
-            sys.stdout.write("  Polarity: not defined\n")
+            if hasattr(self.opt, "use_polarity") and self.opt.use_polarity:
+                raise ProfileError(self, "Polarity expected but not defined")
+            sys.stdout.write("  Polarity: not defined.\n")
+            self.opt.use_polarity = False
         if not self.path:
             raise ProfileError(self, "No path coordinates found in input file")
         else:
             sys.stdout.write("  Path nodes: %d\n" % len(self.path))
         sys.stdout.write("  Holes: %d\n" % len(self.holeli))
         sys.stdout.write("  Particles: %d\n" % len(self.pli))
-        if self.gridli: 
-            sys.stdout.write("  Grid specified.\n")
-            self.opt.use_grid = True
-        if self.randomli: 
-            sys.stdout.write("  Random points specified.\n")
-            self.opt.use_random = True
+        if self.gridli:
+            if not hasattr(self.opt, "use_grid") or self.opt.use_grid:
+                sys.stdout.write("  Grid specified.\n")
+                self.opt.use_grid = True
+            elif hasattr(self.opt, "use_grid") and not self.opt.use_grid:
+                raise ProfileError(self, "Grid found but not expected")
+        else:
+            if hasattr(self.opt, "use_grid") and self.opt.use_grid:
+                raise ProfileError(self, "Grid expected but not found")
+            self.opt.use_grid = False
+        if self.randomli:
+            if not hasattr(self.opt, "use_random") or self.opt.use_random:
+                sys.stdout.write("  Random points specified.\n")
+                self.opt.use_random = True
+            elif hasattr(self.opt, "use_random") and not self.opt.use_random:
+                raise ProfileError(self, "Random points found but not expected")
+        else:
+            if hasattr(self.opt, "use_random") and self.opt.use_random:
+                raise ProfileError(self, "Random points expected but not found")
+            self.opt.use_random = False
         for n, h in enumerate(self.holeli):
             if not h.is_simple_polygon():
                 raise ProfileError(self, 
@@ -370,7 +391,7 @@ class OptionData:
         self.individualProfileOutput = False
         self.output_file_format = "excel"
         self.output_filename_ext = ".xls"
-        self.input_filename_ext = ".d2p"
+        self.input_filename_ext = ".dtp"
         self.output_filename_suffix = ''
         self.output_filename_other_suffix = ''
         self.output_filename_date_suffix = True
@@ -378,6 +399,7 @@ class OptionData:
         self.csv_delimiter = 'comma'
         self.action_if_output_file_exists = 'overwrite'
         self.output_dir = ''
+        self.use_polarity = False
         self.use_random = False
         self.use_grid = False
         self.stop_requested = False

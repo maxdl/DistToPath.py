@@ -205,6 +205,8 @@ def reset_options(opt):
     """
     if hasattr(opt, "metric_unit"):
         delattr(opt, "metric_unit")
+    if hasattr(opt, "use_polarity"):
+        delattr(opt, "use_polarity")
     if hasattr(opt, "use_grid"):
         delattr(opt, "use_grid")
     if hasattr(opt, "use_random"):
