@@ -32,7 +32,7 @@ def save_output(profileli, opt):
         with file_io.FileWriter("session.summary", opt) as f:
             f.writerow(["%s version:" % version.title,
                        "%s (Last modified %s %s, %s)"
-                       % ((version.version,) + version.date)])
+                        % ((version.version,) + version.date)])
             f.writerow(["Number of evaluated profiles:", len(eval_proli)])
             if err_fli:
                 f.writerow(["Number of non-evaluated profiles:", len(err_fli)])
@@ -94,7 +94,7 @@ def save_output(profileli, opt):
                         "Lateral distance to center of path", 
                         "Lateral distance to center of path / path radius",
                         "Particle associated w/ path",
-                        #"Nearest neighbour",
+                        # "Nearest neighbour",
                         "Path length",
                         "Profile id",
                         "Input file",
@@ -104,7 +104,7 @@ def save_output(profileli, opt):
                           m(p.lateral_dist_path, pro.pixelwidth), 
                           p.lateral_dist_path / (pro.path.length() / 2),
                           stringconv.yes_or_no(p.is_assoc_with_path),
-                          #tostr(m(p.nearest_neighbour, s.pixelwidth), 2),
+                          # tostr(m(p.nearest_neighbour, s.pixelwidth), 2),
                           m(pro.path.length(), pro.pixelwidth),
                           pro.id,
                           os.path.basename(pro.inputfn), 
@@ -119,7 +119,7 @@ def save_output(profileli, opt):
                         "Lateral distance to center of path"
                             " / path radius",
                         "Particle associated w/ path",
-                        #"Nearest neighbour",
+                        # "Nearest neighbour",
                         "Path length",
                         "Profile id",
                         "Input file",
@@ -129,7 +129,7 @@ def save_output(profileli, opt):
                           m(p.lateral_dist_path, pro.pixelwidth), 
                           p.lateral_dist_path / (pro.path.length() / 2),
                           stringconv.yes_or_no(p.is_assoc_with_path),
-                          #tostr(m(p.nearest_neighbour, s.pixelwidth), 2),
+                          # tostr(m(p.nearest_neighbour, s.pixelwidth), 2),
                           m(pro.path.length(), pro.pixelwidth),
                           pro.id,
                           os.path.basename(pro.inputfn), 
@@ -144,7 +144,7 @@ def save_output(profileli, opt):
                         "Lateral distance to center of path", 
                         "Lateral distance to center of path / path radius",
                         "Particle associated w/ path",
-                        #"Nearest neighbour",
+                        # "Nearest neighbour",
                         "Path length",
                         "Profile id",
                         "Input file",
@@ -154,7 +154,7 @@ def save_output(profileli, opt):
                           m(p.lateral_dist_path, pro.pixelwidth), 
                           p.lateral_dist_path / (pro.path.length() / 2),
                           stringconv.yes_or_no(p.is_assoc_with_path),
-                          #tostr(m(p.nearest_neighbour, s.pixelwidth), 2),
+                          # tostr(m(p.nearest_neighbour, s.pixelwidth), 2),
                           m(pro.path.length(), pro.pixelwidth),
                           pro.id,
                           os.path.basename(pro.inputfn), 
@@ -169,8 +169,8 @@ def save_output(profileli, opt):
                 n = 0
                 for n1 in range(0, len(pro.pli)):
                     for n2 in range(n1 + 1, len(pro.pli)):
-                        #if (pro.pli[n1].is_assoc_with_path and
-                        #    pro.pli[n2].is_assoc_with_path):
+                        # if (pro.pli[n1].is_assoc_with_path and
+                        #     pro.pli[n2].is_assoc_with_path):
                         f.writerow([n1 + 1, n2 + 1,
                                     m(pro.pli[n1].dist(pro.pli[n2]),
                                       pro.pixelwidth),

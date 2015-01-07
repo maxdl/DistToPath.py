@@ -60,10 +60,10 @@ class Particle(geometry.Point):
             self.dist_to_path = dist_to_path
             self.lateral_dist_path = self.lateral_dist(profile.path)
             self.norm_lateral_dist_path = (self.lateral_dist_path /
-                                          (profile.path.length() / 2.0))
+                                           (profile.path.length() / 2.0))
         self.is_assoc_with_path = (self.
                                    perpend_dist(profile.path,
-                                                #posloc=None,
+                                                # posloc=None,
                                                 dont_care_if_on_or_off_seg=True)
                                      <= geometry.
                                         to_pixel_units(opt.spatial_resolution,
@@ -128,13 +128,13 @@ class ProfileData:
                             if ptype == "particle" else ptype + " points")
                 sys.stdout.write("  Number of %s skipped: %d\n"
                                  % (ptypestr, self.nskipped[ptype]))
-            #for p in self.pli:
-            #    p.get_nearest_neighbour(self)
+            # for p in self.pli:
+            #     p.get_nearest_neighbour(self)
             if opt.stop_requested:
                 return
             sys.stdout.write("Done.\n")
-            #if opt.individualProfileOutput:
-            #    self.__saveResults(opt)
+            # if opt.individualProfileOutput:
+            #     self.__saveResults(opt)
         except ProfileError, (self, msg):
             sys.stdout.write("Error: %s\n" % msg)
             self.errflag = True
@@ -221,7 +221,8 @@ class ProfileData:
             if not hasattr(self.opt, "use_polarity") or self.opt.use_polarity:
                 sys.stdout.write("  Polarity: defined.\n")
                 self.opt.use_polarity = True
-            elif hasattr(self.opt, "use_polarity") and not self.opt.use_polarity:
+            elif hasattr(self.opt, "use_polarity") and \
+                    not self.opt.use_polarity:
                 raise ProfileError(self, "Polarity defined but not expected")
         else:
             if hasattr(self.opt, "use_polarity") and self.opt.use_polarity:
