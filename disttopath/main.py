@@ -1,16 +1,12 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import with_statement
-import sys
 import os.path
 import time
-from core import *
-import geometry
-import file_io
-import version
-import stringconv
+from .core import *
+from . import geometry
+from . import file_io
+from . import version
+from . import stringconv
 
-    
+
 #
 # Functions
 #
@@ -43,16 +39,15 @@ def save_output(profileli, opt):
                 f.writerow(["Input files processed cleanly:"])
                 f.writerows([[fn] for fn in clean_fli])
             if nop_fli:
-                f.writerow(["Input files processed but which generated no "
-                            "particle distances:"])
+                f.writerow(["Input files processed but which generated no particle distances:"])
                 f.writerows([[fn] for fn in nop_fli])
             if warn_fli:
-                f.writerow(["Input files processed but which generated "
-                            "warnings (see log for details):"]) 
+                f.writerow(["Input files processed but which generated warnings "
+                            "(see log for details):"])
                 f.writerows([[fn] for fn in warn_fli])
             if err_fli:
-                f.writerow(["Input files not processed or not included in "
-                            "summary (see log for details):"])
+                f.writerow(["Input files not processed or not included in summary "
+                            "(see log for details):"])
                 f.writerows([[fn] for fn in err_fli])
 
     def write_profile_summary():
@@ -94,7 +89,6 @@ def save_output(profileli, opt):
                         "Lateral distance to center of path", 
                         "Lateral distance to center of path / path radius",
                         "Particle associated w/ path",
-                        # "Nearest neighbour",
                         "Path length",
                         "Profile id",
                         "Input file",
@@ -104,22 +98,18 @@ def save_output(profileli, opt):
                           m(p.lateral_dist_path, pro.pixelwidth), 
                           p.lateral_dist_path / (pro.path.length() / 2),
                           stringconv.yes_or_no(p.is_assoc_with_path),
-                          # tostr(m(p.nearest_neighbour, s.pixelwidth), 2),
                           m(pro.path.length(), pro.pixelwidth),
                           pro.id,
                           os.path.basename(pro.inputfn), 
-                          pro.comment] for pro in eval_proli for n, p in
-                         enumerate(pro.pli)])
+                          pro.comment] for pro in eval_proli for n, p in enumerate(pro.pli)])
             
     def write_random_summary():
         with file_io.FileWriter("random.summary", opt) as f:
             f.writerow(["Point number (as appearing in input file)", 
                         "Perpendicular distance to path", 
                         "Lateral distance to center of path", 
-                        "Lateral distance to center of path"
-                            " / path radius",
+                        "Lateral distance to center of path / path radius",
                         "Particle associated w/ path",
-                        # "Nearest neighbour",
                         "Path length",
                         "Profile id",
                         "Input file",
@@ -129,13 +119,10 @@ def save_output(profileli, opt):
                           m(p.lateral_dist_path, pro.pixelwidth), 
                           p.lateral_dist_path / (pro.path.length() / 2),
                           stringconv.yes_or_no(p.is_assoc_with_path),
-                          # tostr(m(p.nearest_neighbour, s.pixelwidth), 2),
                           m(pro.path.length(), pro.pixelwidth),
                           pro.id,
                           os.path.basename(pro.inputfn), 
-                          pro.comment]
-                          for pro in eval_proli
-                          for n, p in enumerate(pro.randomli)])
+                          pro.comment] for pro in eval_proli for n, p in enumerate(pro.randomli)])
 
     def write_grid_summary():
         with file_io.FileWriter("grid.summary", opt) as f:
@@ -144,7 +131,6 @@ def save_output(profileli, opt):
                         "Lateral distance to center of path", 
                         "Lateral distance to center of path / path radius",
                         "Particle associated w/ path",
-                        # "Nearest neighbour",
                         "Path length",
                         "Profile id",
                         "Input file",
@@ -154,13 +140,10 @@ def save_output(profileli, opt):
                           m(p.lateral_dist_path, pro.pixelwidth), 
                           p.lateral_dist_path / (pro.path.length() / 2),
                           stringconv.yes_or_no(p.is_assoc_with_path),
-                          # tostr(m(p.nearest_neighbour, s.pixelwidth), 2),
                           m(pro.path.length(), pro.pixelwidth),
                           pro.id,
                           os.path.basename(pro.inputfn), 
-                          pro.comment]
-                         for pro in eval_proli
-                         for n, p in enumerate(pro.gridli)])
+                          pro.comment] for pro in eval_proli for n, p in enumerate(pro.gridli)])
             
     def write_interparticle_summary():
         with file_io.FileWriter("interparticle.summary", opt) as f:        
@@ -172,8 +155,7 @@ def save_output(profileli, opt):
                         # if (pro.pli[n1].is_assoc_with_path and
                         #     pro.pli[n2].is_assoc_with_path):
                         f.writerow([n1 + 1, n2 + 1,
-                                    m(pro.pli[n1].dist(pro.pli[n2]),
-                                      pro.pixelwidth),
+                                    m(pro.pli[n1].dist(pro.pli[n2]), pro.pixelwidth),
                                     os.path.basename(pro.inputfn)])
                         n += 1
             
@@ -226,17 +208,15 @@ def show_options(opt):
 
 def get_output_format(opt):
     if opt.output_file_format == 'excel':
-        import imp
         try:
-            imp.find_module("pyExcelerator")
+            import openpyxl
         except ImportError:
             sys.stdout.write("Unable to write Excel files: resorting to csv "
                              "format.\n")
             opt.output_file_format = "csv"
     if opt.output_file_format == 'csv':
         opt.output_filename_ext = ".csv"
-        opt.csv_format = {'dialect': 'excel', 'lineterminator': '\n',
-                          'encoding': sys.getfilesystemencoding()}
+        opt.csv_format = {'dialect': 'excel', 'lineterminator': '\n'}
         if opt.csv_delimiter == 'tab':
             opt.csv_format['delimiter'] = '\t'
     if opt.output_filename_date_suffix:

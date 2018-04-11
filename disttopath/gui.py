@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Nov  6 2013)
+## Python code generated with wxFormBuilder (version Mar 29 2018)
 ## http://www.wxformbuilder.org/
 ##
-## PLEASE DO "NOT" EDIT THIS FILE!
+## PLEASE DO *NOT* EDIT THIS FILE!
 ###########################################################################
 
 import wx
+import wx.adv
 import wx.xrc
 
 wx.ID_ADDFILE = 1000
@@ -26,7 +27,7 @@ class MainFrame ( wx.Frame ):
 	def __init__( self, parent ):
 		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.CLOSE_BOX|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 		
-		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 		self.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_3DLIGHT ) )
 		
 		MainSizer = wx.FlexGridSizer( 2, 1, 0, 0 )
@@ -44,20 +45,20 @@ class MainFrame ( wx.Frame ):
 		
 		InputButtonSizer = wx.GridSizer( 1, 3, 0, 0 )
 		
-		self.AddButton = wx.Button( self.InputPanel, wx.ID_ADDFILE, u"&Add...", wx.Point( -1,-1 ), wx.DefaultSize, 0 )
+		self.AddButton = wx.Button( InputPanelSizer.GetStaticBox(), wx.ID_ADDFILE, u"&Add...", wx.Point( -1,-1 ), wx.DefaultSize, 0 )
 		self.AddButton.SetDefault() 
 		InputButtonSizer.Add( self.AddButton, 1, wx.ALL, 5 )
 		
-		self.RemoveButton = wx.Button( self.InputPanel, wx.ID_REMOVEFILE, u"&Remove", wx.Point( -1,-1 ), wx.DefaultSize, 0 )
+		self.RemoveButton = wx.Button( InputPanelSizer.GetStaticBox(), wx.ID_REMOVEFILE, u"&Remove", wx.Point( -1,-1 ), wx.DefaultSize, 0 )
 		InputButtonSizer.Add( self.RemoveButton, 0, wx.ALL, 5 )
 		
-		self.ViewButton = wx.Button( self.InputPanel, wx.ID_VIEWFILE, u"&View", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.ViewButton = wx.Button( InputPanelSizer.GetStaticBox(), wx.ID_VIEWFILE, u"&View", wx.DefaultPosition, wx.DefaultSize, 0 )
 		InputButtonSizer.Add( self.ViewButton, 0, wx.ALL, 5 )
 		
 		
 		InputPanelSizer.Add( InputButtonSizer, 0, 0, 5 )
 		
-		self.InputFileListCtrl = wx.ListCtrl( self.InputPanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
+		self.InputFileListCtrl = wx.ListCtrl( InputPanelSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
 		self.InputFileListCtrl.SetMinSize( wx.Size( 400,-1 ) )
 		
 		InputPanelSizer.Add( self.InputFileListCtrl, 1, wx.ALL|wx.EXPAND, 5 )
@@ -71,7 +72,7 @@ class MainFrame ( wx.Frame ):
 		self.OptionsPanel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		OptionsPanelSizer = wx.StaticBoxSizer( wx.StaticBox( self.OptionsPanel, wx.ID_ANY, u"Options" ), wx.VERTICAL )
 		
-		self.OptionsNotebook = wx.Notebook( self.OptionsPanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.OptionsNotebook = wx.Notebook( OptionsPanelSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.AnalysisOptionsTab = wx.Panel( self.OptionsNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		AnalysisOptionsSizer = wx.FlexGridSizer( 0, 1, 0, 0 )
 		AnalysisOptionsSizer.SetFlexibleDirection( wx.BOTH )
@@ -83,35 +84,35 @@ class MainFrame ( wx.Frame ):
 		
 		self.SpatResLabel = wx.StaticText( self.AnalysisOptionsTab, wx.ID_ANY, u"Spatial resolution:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.SpatResLabel.Wrap( -1 )
-		self.SpatResLabel.SetToolTipString( u"Spatial resolution of the point pattern" )
+		self.SpatResLabel.SetToolTip( u"Spatial resolution of the point pattern" )
 		
 		GenAnalysisOptionsSizer.Add( self.SpatResLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.SpatResSpinCtrl = wx.SpinCtrl( self.AnalysisOptionsTab, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 0, 1000, 0 )
-		self.SpatResSpinCtrl.SetToolTipString( u"Spatial resolution of the point pattern" )
+		self.SpatResSpinCtrl.SetToolTip( u"Spatial resolution of the point pattern" )
 		
 		GenAnalysisOptionsSizer.Add( self.SpatResSpinCtrl, 0, wx.ALL, 5 )
 		
 		self.SpatResUnitLabel = wx.StaticText( self.AnalysisOptionsTab, wx.ID_ANY, u"metric units", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_LEFT )
 		self.SpatResUnitLabel.Wrap( -1 )
-		self.SpatResUnitLabel.SetToolTipString( u"Spatial resolution of the point pattern" )
+		self.SpatResUnitLabel.SetToolTip( u"Spatial resolution of the point pattern" )
 		
 		GenAnalysisOptionsSizer.Add( self.SpatResUnitLabel, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		self.ShellWidthLabel = wx.StaticText( self.AnalysisOptionsTab, wx.ID_ANY, u"Shell width:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.ShellWidthLabel.Wrap( -1 )
-		self.ShellWidthLabel.SetToolTipString( u"Points farther than this from the postsynaptic element are discarded" )
+		self.ShellWidthLabel.SetToolTip( u"Points farther than this from the postsynaptic element are discarded" )
 		
 		GenAnalysisOptionsSizer.Add( self.ShellWidthLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.ShellWidthSpinCtrl = wx.SpinCtrl( self.AnalysisOptionsTab, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 0, 1000, 200 )
-		self.ShellWidthSpinCtrl.SetToolTipString( u"Points farther than this from the postsynaptic element are discarded" )
+		self.ShellWidthSpinCtrl.SetToolTip( u"Points farther than this from the postsynaptic element are discarded" )
 		
 		GenAnalysisOptionsSizer.Add( self.ShellWidthSpinCtrl, 0, wx.ALL, 5 )
 		
 		self.ShellWidthUnitLabel = wx.StaticText( self.AnalysisOptionsTab, wx.ID_ANY, u"metric units", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_LEFT )
 		self.ShellWidthUnitLabel.Wrap( -1 )
-		self.ShellWidthUnitLabel.SetToolTipString( u"Points farther than this from the postsynaptic element are discarded" )
+		self.ShellWidthUnitLabel.SetToolTip( u"Points farther than this from the postsynaptic element are discarded" )
 		
 		GenAnalysisOptionsSizer.Add( self.ShellWidthUnitLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
@@ -124,7 +125,7 @@ class MainFrame ( wx.Frame ):
 		AnalysisOptionsSizer.Fit( self.AnalysisOptionsTab )
 		self.OptionsNotebook.AddPage( self.AnalysisOptionsTab, u"Analysis", True )
 		self.OutputOptionsTab = wx.Panel( self.OptionsNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		self.OutputOptionsTab.SetToolTipString( u"Note: Excel output may not be available" )
+		self.OutputOptionsTab.SetToolTip( u"Note: Excel output may not be available" )
 		
 		OutputOptionsSizer = wx.FlexGridSizer( 3, 2, 0, 0 )
 		OutputOptionsSizer.SetFlexibleDirection( wx.BOTH )
@@ -150,7 +151,7 @@ class MainFrame ( wx.Frame ):
 		
 		OutputFileSuffixBox = wx.StaticBoxSizer( wx.StaticBox( self.OutputOptionsTab, wx.ID_ANY, u"Output file suffix" ), wx.VERTICAL )
 		
-		self.DateSuffixCheckBox = wx.CheckBox( self.OutputOptionsTab, wx.ID_ANY, u"Today's date", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.DateSuffixCheckBox = wx.CheckBox( OutputFileSuffixBox.GetStaticBox(), wx.ID_ANY, u"Today's date", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.DateSuffixCheckBox.SetValue(True) 
 		OutputFileSuffixBox.Add( self.DateSuffixCheckBox, 0, wx.ALL, 5 )
 		
@@ -159,10 +160,10 @@ class MainFrame ( wx.Frame ):
 		OtherSuffixSizer.SetFlexibleDirection( wx.BOTH )
 		OtherSuffixSizer.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 		
-		self.OtherSuffixCheckBox = wx.CheckBox( self.OutputOptionsTab, wx.ID_OTHERSUFFIXCHECKBOX, u"Other:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.OtherSuffixCheckBox = wx.CheckBox( OutputFileSuffixBox.GetStaticBox(), wx.ID_OTHERSUFFIXCHECKBOX, u"Other:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		OtherSuffixSizer.Add( self.OtherSuffixCheckBox, 0, wx.TOP|wx.BOTTOM|wx.LEFT|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		self.OtherSuffixTextCtrl = wx.TextCtrl( self.OutputOptionsTab, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 50,-1 ), 0 )
+		self.OtherSuffixTextCtrl = wx.TextCtrl( OutputFileSuffixBox.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 50,-1 ), 0 )
 		self.OtherSuffixTextCtrl.SetMaxLength( 0 ) 
 		OtherSuffixSizer.Add( self.OtherSuffixTextCtrl, 0, wx.TOP|wx.BOTTOM|wx.RIGHT, 5 )
 		
@@ -217,7 +218,7 @@ class MainFrame ( wx.Frame ):
 		
 		OptionsPanelSizer.Add( self.OptionsNotebook, 1, wx.EXPAND |wx.ALL, 5 )
 		
-		self.SetOptionsAsDefaultButton = wx.Button( self.OptionsPanel, wx.ID_ANY, u"Set options as default", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.SetOptionsAsDefaultButton = wx.Button( OptionsPanelSizer.GetStaticBox(), wx.ID_ANY, u"Set options as default", wx.DefaultPosition, wx.DefaultSize, 0 )
 		OptionsPanelSizer.Add( self.SetOptionsAsDefaultButton, 0, wx.ALL, 5 )
 		
 		
@@ -229,7 +230,7 @@ class MainFrame ( wx.Frame ):
 		self.LogPanel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		LogSizer = wx.StaticBoxSizer( wx.StaticBox( self.LogPanel, wx.ID_ANY, u"Log" ), wx.VERTICAL )
 		
-		self.LogTextCtrl = wx.TextCtrl( self.LogPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), wx.HSCROLL|wx.TE_MULTILINE )
+		self.LogTextCtrl = wx.TextCtrl( LogSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), wx.HSCROLL|wx.TE_MULTILINE )
 		self.LogTextCtrl.SetMaxLength( 0 ) 
 		LogSizer.Add( self.LogTextCtrl, 1, wx.ALL|wx.EXPAND, 5 )
 		
@@ -257,7 +258,7 @@ class MainFrame ( wx.Frame ):
 		MainButtonSizer.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 		
 		
-		MainButtonSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		MainButtonSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.StartButton = wx.Button( self.MainButtonPanel, wx.ID_START, u"&Start", wx.DefaultPosition, wx.DefaultSize, 0 )
 		MainButtonSizer.Add( self.StartButton, 0, wx.ALL, 5 )
@@ -338,7 +339,7 @@ class ViewFileDialog ( wx.Dialog ):
 	def __init__( self, parent ):
 		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"View input file", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
 		
-		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 		
 		ViewFileSizer = wx.FlexGridSizer( 2, 1, 0, 0 )
 		ViewFileSizer.SetFlexibleDirection( wx.BOTH )
@@ -383,7 +384,7 @@ class AboutDialog ( wx.Dialog ):
 	def __init__( self, parent ):
 		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"About", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.DEFAULT_DIALOG_STYLE )
 		
-		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 		
 		AboutSizer = wx.FlexGridSizer( 0, 1, 0, 0 )
 		AboutSizer.AddGrowableRow( 2 )
@@ -401,10 +402,10 @@ class AboutDialog ( wx.Dialog ):
 		TopSizer.Add( self.InitialSpaceSizer, 0, wx.ALL, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		TitleSizer = wx.FlexGridSizer( 1, 3, 0, 0 )
 		TitleSizer.AddGrowableCol( 2 )
@@ -420,7 +421,7 @@ class AboutDialog ( wx.Dialog ):
 		
 		self.TitleLabel = wx.StaticText( self, wx.ID_ANY, u"TitleLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.TitleLabel.Wrap( -1 )
-		self.TitleLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
+		self.TitleLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
 		
 		TitleSizer.Add( self.TitleLabel, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
@@ -428,43 +429,43 @@ class AboutDialog ( wx.Dialog ):
 		TopSizer.Add( TitleSizer, 1, wx.EXPAND|wx.RIGHT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.VersionLabel = wx.StaticText( self, wx.ID_ANY, u"VersionLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.VersionLabel.Wrap( -1 )
-		self.VersionLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 90, False, wx.EmptyString ) )
+		self.VersionLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString ) )
 		
 		TopSizer.Add( self.VersionLabel, 0, wx.ALIGN_BOTTOM|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.LastModLabel = wx.StaticText( self, wx.ID_ANY, u"LastModLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.LastModLabel.Wrap( -1 )
 		TopSizer.Add( self.LastModLabel, 0, wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.CopyrightLabel = wx.StaticText( self, wx.ID_ANY, u"CopyrightLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.CopyrightLabel.Wrap( -1 )
 		TopSizer.Add( self.CopyrightLabel, 0, wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.LicenseLabel = wx.StaticText( self, wx.ID_ANY, u"LicenseLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.LicenseLabel.Wrap( -1 )
 		TopSizer.Add( self.LicenseLabel, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		HyperLinksSizer = wx.FlexGridSizer( 2, 2, 0, 0 )
 		HyperLinksSizer.AddGrowableCol( 1 )
@@ -475,21 +476,21 @@ class AboutDialog ( wx.Dialog ):
 		self.EmailLabel.Wrap( -1 )
 		HyperLinksSizer.Add( self.EmailLabel, 0, wx.ALL, 5 )
 		
-		self.EmailHyperlink = wx.HyperlinkCtrl( self, wx.ID_ANY, u"EmailHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
+		self.EmailHyperlink = wx.adv.HyperlinkCtrl( self, wx.ID_ANY, u"EmailHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize )
 		HyperLinksSizer.Add( self.EmailHyperlink, 0, wx.ALL, 5 )
 		
 		self.WebLabel = wx.StaticText( self, wx.ID_ANY, u"Web:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.WebLabel.Wrap( -1 )
 		HyperLinksSizer.Add( self.WebLabel, 0, wx.ALL, 5 )
 		
-		self.WebHyperlink = wx.HyperlinkCtrl( self, wx.ID_ANY, u"WebHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
+		self.WebHyperlink = wx.adv.HyperlinkCtrl( self, wx.ID_ANY, u"WebHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize )
 		HyperLinksSizer.Add( self.WebHyperlink, 0, wx.ALL, 5 )
 		
 		
 		TopSizer.Add( HyperLinksSizer, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
 		AboutSizer.Add( TopSizer, 1, wx.EXPAND, 5 )
@@ -532,7 +533,7 @@ class ProgressDialog ( wx.Dialog ):
 	def __init__( self, parent ):
 		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Progress", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
 		
-		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 		
 		MainSizer = wx.FlexGridSizer( 2, 1, 0, 0 )
 		MainSizer.SetFlexibleDirection( wx.BOTH )

@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-
 import codecs
 import os.path
 import sys
 
 
-class FileWriter():
+class FileWriter:
     def __init__(self, main_name, opt):
         self.main_name = main_name
         self.opt = opt
@@ -21,9 +19,8 @@ class FileWriter():
                 self.opt.action_if_output_file_exists == 'enumerate'):
                 self.fn = enum_filename(self.fn, 2)
         if self.opt.output_file_format == 'csv':
-            import unicode_csv as writer
-            self.f = writer.Writer(file(self.fn, 'w'),
-                                   **self.opt.csv_format)
+            import csv
+            self.f = csv.writer(open(self.fn, 'w'), **self.opt.csv_format)
         elif self.opt.output_file_format == 'excel':
             import xls as writer
             self.f = writer.Writer(self.fn)
