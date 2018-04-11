@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import sys
-import exceptions
-import geometry
-import file_io
+from . import geometry
+from . import file_io
 
 #
 # Classes
@@ -74,12 +71,12 @@ class Particle(geometry.Point):
         if not self.is_assoc_with_path:
             self.nearest_neighbour = None
             return
-        mindist = float(sys.maxint)
+        mindist = float(sys.maxsize)
         for p in profile.pli:
             if p is not self and p.isAssociatedWithPath:
                 if self.dist(p) < mindist:
                     mindist = self.dist(p)
-        if not mindist < float(sys.maxint):
+        if not mindist < float(sys.maxsize):
             self.nearest_neighbour = None
         else:
             self.nearest_neighbour = mindist
@@ -135,8 +132,8 @@ class ProfileData:
             sys.stdout.write("Done.\n")
             # if opt.individualProfileOutput:
             #     self.__saveResults(opt)
-        except ProfileError, (self, msg):
-            sys.stdout.write("Error: %s\n" % msg)
+        except ProfileError as err:
+            sys.stdout.write("Error: %s\n" % err.msg)
             self.errflag = True
 
     def __parse(self):
@@ -407,9 +404,10 @@ class OptionData:
 # end of class OptionData
 
 
-class ProfileError(exceptions.Exception):
+class ProfileError(Exception):
     def __init__(self, profile, msg):
-        self.args = (profile, msg + ".")
+        self.profile = profile
+        self.msg = msg + "."
 
 
 def profile_warning(profile, msg):
