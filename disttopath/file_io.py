@@ -22,8 +22,8 @@ class FileWriter:
             import csv
             self.f = csv.writer(open(self.fn, 'w'), **self.opt.csv_format)
         elif self.opt.output_file_format == 'excel':
-            import xls as writer
-            self.f = writer.Writer(self.fn)
+            from . import xls
+            self.f = xls.Writer(self.fn)
         return self.f
 
     def __exit__(self, _type, _val, tb):

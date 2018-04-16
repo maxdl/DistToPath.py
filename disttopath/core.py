@@ -1,87 +1,201 @@
+import random
 import sys
 from . import geometry
 from . import file_io
+
+
+# Convenience functions
+
+def dot_progress(line_length=80, char='.', reset=False):
+    """Simple progress indicator on sys.stdout"""
+    if not hasattr(dot_progress, 'counter'):
+        dot_progress.counter = 0
+    if reset:
+        dot_progress.counter = 0
+        sys.stdout.write('\n')
+    dot_progress.counter += 1
+    sys.stdout.write(char)
+    if dot_progress.counter == line_length:
+        dot_progress.counter = 0
+        sys.stdout.write('\n')
+
+
+def lazy_property(fn):
+    """Decorator that makes a property lazily evaluated.
+       From https://stevenloria.com/lazy-properties/.
+    """
+    attr_name = '_lazy_' + fn.__name__
+
+    @property
+    def _lazy_property(self):
+        if not hasattr(self, attr_name):
+            setattr(self, attr_name, fn(self))
+        return getattr(self, attr_name)
+
+    return _lazy_property
+
 
 #
 # Classes
 #
 
 
-class Particle(geometry.Point):
-    def __init__(self, x=None, y=None, ptype=""):
+class Point(geometry.Point):
+    def __init__(self, x=None, y=None, ptype='', profile=None):
         if isinstance(x, geometry.Point):
             geometry.Point.__init__(self, x.x, x.y)
         else:
-            geometry.Point.__init__(self, x, y)        
-        self.skipped = False
-        self.ptype = ptype
-        self.dist_to_path = None
-        self.lateral_dist_path = None
-        self.norm_lateral_dist_path = None
-        self.is_assoc_with_path = None
-        self.is_within_shell = None
-        self.nearest_neighbour = geometry.Point()
-        
-    def __is_within_hole(self, profile):
-        """  Determine whether self is inside a profile hole
-        """                
-        for h in profile.holeli:
-            if self.is_within_polygon(h):
-                return True
-        return False
-
-    def __is_within_shell(self, profile, opt):
-        return (self.dist_to_path is not None
-                and abs(self.dist_to_path) <=
-                geometry.to_pixel_units(opt.shell_width, profile.pixelwidth))
-
-    def determine_stuff(self, profile, opt):
-        if self.__is_within_hole(profile):
-            if self.ptype == "particle":  # don't warn if random or grid points
-                profile_warning(profile,
-                                "Particle at %s located within a hole\n"
-                                "   => skipping" % self)
-            self.skipped = True
-            profile.nskipped[self.ptype] += 1
-            return        
-        dist_to_path = self.perpend_dist(profile.path, posloc=profile.posloc)
-        if dist_to_path is None:
-            if self.ptype == "particle":
-                profile_warning(profile, "Unable to project on path \n"
-                                         "   => skipping particle at"
-                                         " %s" % self)
-            self.skipped = True
-            profile.nskipped[self.ptype] += 1
-            return
+            geometry.Point.__init__(self, x, y)
+        self.profile = profile
+        if self.profile is not None:
+            self.opt = self.profile.opt
         else:
-            self.dist_to_path = dist_to_path
-            self.lateral_dist_path = self.lateral_dist(profile.path)
-            self.norm_lateral_dist_path = (self.lateral_dist_path /
-                                           (profile.path.length() / 2.0))
-        self.is_assoc_with_path = (self.
-                                   perpend_dist(profile.path,
-                                                # posloc=None,
-                                                dont_care_if_on_or_off_seg=True)
-                                     <= geometry.
-                                        to_pixel_units(opt.spatial_resolution,
-                                                       profile.pixelwidth))
-        self.is_within_shell = self.__is_within_shell(profile, opt)
+            self.opt = None
+        self.discard = False
+        self.ptype = ptype
+        self.cluster = None
+        self.nearest_neighbour_dist = None
+        self.nearest_neighbour_point = geometry.Point()
+        self.nearest_lateral_neighbour_dist = None
+        self.nearest_lateral_neighbour_point = geometry.Point()
+        self.nearest_neighbour = geometry.Point()
 
-    def get_nearest_neighbour(self, profile):
-        if not self.is_assoc_with_path:
-            self.nearest_neighbour = None
+    def determine_stuff(self):
+        """Determine general stuff for a point, including distance to path.
+         Also mark the point for discarding if it is not valid.
+        """
+
+        def mark_to_discard(msg):
+            if self.ptype == 'particle':  # don't warn if random points
+                profile_message("Discarding particle at %s: %s" % (self, msg))
+            self.discard = True
+            self.profile.n_discarded[self.ptype] += 1
             return
+
+        if self.is_within_hole:
+            mark_to_discard("Located within a profile hole")
+            return
+        if self.dist_to_path is None:
+            mark_to_discard("Unable to project on path")
+            return
+        if not self.is_within_shell:
+            mark_to_discard("Located outside the shell")
+            return
+        # This is to force the computation of these lazy properties here
+        __ = self.lateral_dist_path
+        __ = self.norm_lateral_dist_path
+        __ = self.is_associated_with_path
+
+    @lazy_property
+    def dist_to_path(self):
+        """Return distance to path"""
+        return self.perpend_dist(self.profile.path, posloc=self.profile.posloc)
+
+    @lazy_property
+    def lateral_dist_path(self):
+        """Return lateral distance along path"""
+        return self.lateral_dist(self.profile.path)
+
+    @lazy_property
+    def norm_lateral_dist_path(self):
+        """Return normalized lateral distance along path"""
+        return self.lateral_dist_path / (self.profile.path.length() / 2)
+
+    @lazy_property
+    def is_within_hole(self):
+        """Determine whether self is inside a profile hole"""
+        is_within_hole = False
+        for h in self.profile.holeli:
+            if self.is_within_polygon(h):
+                is_within_hole = True
+            else:
+                is_within_hole = False
+        return is_within_hole
+
+    @lazy_property
+    def is_within_shell(self):
+        """Determine whether self is within shell"""
+        return (self.dist_to_path is not None
+                and abs(self.dist_to_path) <= geometry.to_pixel_units(self.opt.shell_width,
+                                                                      self.profile.pixelwidth))
+
+    @lazy_property
+    def is_associated_with_path(self):
+        """Determine whether self is associated with the profile
+        border, i e, is within a distance of it that is less than
+        the spatial resolution"""
+        if (abs(self.dist_to_path) <= geometry.to_pixel_units(
+                self.profile.opt.spatial_resolution,
+                self.profile.pixelwidth)):
+            return True
+        else:
+            return False
+
+    def get_nearest_neighbour(self, pointli):
+        """Determine distance to nearest neighbour."""
+        # if not self.is_associated_with_path:
+        #     self.nearest_neighbour = None
+        #     return
         mindist = float(sys.maxsize)
-        for p in profile.pli:
-            if p is not self and p.isAssociatedWithPath:
+        for p in pointli:
+            if p is not self:
                 if self.dist(p) < mindist:
                     mindist = self.dist(p)
         if not mindist < float(sys.maxsize):
             self.nearest_neighbour = None
         else:
             self.nearest_neighbour = mindist
-    
-       
+        return self.nearest_neighbour
+
+    def get_nearest_lateral_neighbour(self, pointli):
+        """Determine distance along path to nearest neighbour."""
+        # Assumes that only valid (projectable, within shell etc) points
+        # are in pointli
+        mindist = float(sys.maxsize)
+        minp = Point()
+        for p in pointli:
+            if p is not self:
+                d = self.lateral_dist_to_point(p, self.profile.path)
+                if d < mindist:
+                    mindist = d
+                    minp = p
+        if not mindist < float(sys.maxsize):
+            return None
+        else:
+            self.nearest_lateral_neighbour_dist = mindist
+            self.nearest_lateral_neighbour_point = minp
+            return self.nearest_lateral_neighbour_dist
+
+
+class PointList(list):
+    def __init__(self, pointli, ptype, profile):
+        super().__init__()
+        try:
+            self.extend([Point(p.x, p.y, ptype, profile) for p in pointli])
+        except (AttributeError, IndexError):
+            raise TypeError("not a list of Point elements")
+
+
+class ClusterData(list):
+    def __init__(self, pointli=None):
+        super().__init__()
+        if pointli is None:
+            pointli = []
+        try:
+            self.extend([Point(p.x, p.y) for p in pointli])
+        except (AttributeError, IndexError):
+            raise TypeError("not a point list")
+        self.convex_hull = geometry.SegmentedPath()
+
+    def lateral_dist_to_cluster(self, c2, path):
+        """Determine lateral distance to a cluster c2 along profile
+        border.
+        """
+        centroid = Point(self.convex_hull.centroid())
+        centroid2 = Point(c2.convex_hull.centroid())
+        return centroid.lateral_dist_to_point(centroid2, path)
+
+
 class ProfileData:
     def __init__(self, inputfn, opt):
         self.id = None
@@ -90,13 +204,16 @@ class ProfileData:
         self.opt = opt
         self.holeli = []
         self.pli = []
-        self.gridli = []
         self.randomli = []
-        self.nskipped = {"particle": 0, "random": 0, "grid": 0}
+        self.mcli = []
+        self.clusterli = []
+        self.pp_distli, self.pp_latdistli = [], []
+        self.rp_distli, self.rp_latdistli = [], []
+        self.n_discarded = {'particle': 0, 'random': 0}
         self.comment = ""
         self.pixelwidth = None
         self.metric_unit = ""
-        self.posloc = None
+        self.posloc = geometry.Point()
         self.path = geometry.SegmentedPath()
         self.warnflag = False
         self.errflag = False             
@@ -104,37 +221,220 @@ class ProfileData:
     def process(self, opt):
         """ Parse profile data from a file and determine distances
         """
+
+        def compute_stuff(pli):
+            for pt in pli:
+                pt.determine_stuff()
+
         try:
             self.__parse()
             self.__check_path()
-            sys.stdout.write("Determining stuff...\n")
-            for p in self.pli:
-                p.determine_stuff(self, opt)
-            self.pli = [p for p in self.pli if not p.skipped]
-            for g in self.gridli:
-                g.determine_stuff(self, opt)
-            self.gridli = [g for g in self.gridli if not g.skipped]            
-            for r in self.randomli:
-                r.determine_stuff(self, opt)
-            self.randomli = [r for r in self.randomli if not r.skipped]
-            for ptype in ("particle", "random", "grid"):
-                if ((ptype == "random" and not opt.use_random) or
-                        (ptype == "grid" and not opt.use_grid)):
+            sys.stdout.write("Determining distances etc...\n")
+            compute_stuff(self.pli)
+            self.pli = [p for p in self.pli if not p.discard]
+            compute_stuff(self.randomli)
+            self.randomli = [p for p in self.randomli if not p.discard]
+            for ptype in ('particle', 'random'):
+                if ptype == 'random' and not opt.use_random:
                     continue
-                ptypestr = ("particles"
-                            if ptype == "particle" else ptype + " points")
-                sys.stdout.write("  Number of %s skipped: %d\n"
-                                 % (ptypestr, self.nskipped[ptype]))
-            # for p in self.pli:
-            #     p.get_nearest_neighbour(self)
+                ptypestr = 'particles' if ptype == 'particle' else ptype + ' points'
+                sys.stdout.write("  Number of %s discarded: %d\n"
+                                 % (ptypestr, self.n_discarded[ptype]))
+            if self.opt.determine_interpoint_dists:
+                sys.stdout.write("Determining interpoint distances...\n")
+                self._determine_interdistlis()
+            if self.opt.determine_clusters:
+                sys.stdout.write("Determining clusters...\n")
+                self.clusterli = self._determine_clusters(self.pli)
+            if self.opt.run_monte_carlo:
+                sys.stdout.write("Running Monte Carlo simulations...\n")
+                self._run_monte_carlo()
             if opt.stop_requested:
                 return
             sys.stdout.write("Done.\n")
-            # if opt.individualProfileOutput:
-            #     self.__saveResults(opt)
         except ProfileError as err:
             sys.stdout.write("Error: %s\n" % err.msg)
             self.errflag = True
+
+    def _determine_interdistlis(self):
+        if True not in [val for key, val in
+                        self.opt.interpoint_relations.items()
+                        if "simulated" not in key]:
+            return
+        if self.opt.interpoint_relations["particle - particle"]:
+            self.pp_distli, self.pp_latdistli = \
+                self._get_same_interpoint_distances(self.pli)
+        if self.opt.use_random and self.opt.interpoint_relations["random - "
+                                                                 "particle"]:
+            self.rp_distli, self.rp_latdistli = \
+                self._get_interpoint_distances2(self.randomli, self.pli)
+
+    def _get_same_interpoint_distances(self, pointli):
+        dli = []
+        latdli = []
+        for i in range(0, len(pointli)):
+            if self.opt.stop_requested:
+                return [], []
+            if self.opt.interpoint_dist_mode == 'all':
+                for j in range(i + 1, len(pointli)):
+                    if self.opt.interpoint_shortest_dist:
+                        dli.append(pointli[i].dist(pointli[j]))
+                    if self.opt.interpoint_lateral_dist:
+                        latdli.append(pointli[i].lateral_dist_to_point(
+                            pointli[j], self.path))
+            elif self.opt.interpoint_dist_mode == 'nearest neighbour':
+                if self.opt.interpoint_shortest_dist:
+                    dli.append(pointli[i].get_nearest_neighbour(pointli))
+                if self.opt.interpoint_lateral_dist:
+                    latdli.append(pointli[i].get_nearest_lateral_neighbour(
+                        pointli))
+        dli = [d for d in dli if d is not None]
+        latdli = [d for d in latdli if d is not None]
+        return dli, latdli
+
+    def _get_interpoint_distances2(self, pointli, pointli2=None):
+        if pointli2 is None:
+            pointli2 = []
+        dli = []
+        latdli = []
+        for i, p in enumerate(pointli):
+            if self.opt.stop_requested:
+                return [], []
+            if self.opt.interpoint_dist_mode == 'all':
+                for p2 in pointli2:
+                    if self.opt.interpoint_shortest_dist:
+                        dli.append(p.dist(p2))
+                    if self.opt.interpoint_lateral_dist:
+                        latdli.append(p.lateral_dist_to_point(p2, self.path))
+            elif self.opt.interpoint_dist_mode == 'nearest neighbour':
+                if self.opt.interpoint_shortest_dist:
+                    dli.append(p.get_nearest_neighbour(pointli2))
+                if self.opt.interpoint_lateral_dist:
+                    latdli.append(p.get_nearest_lateral_neighbour(pointli2))
+        dli = [d for d in dli if d is not None]
+        latdli = [d for d in latdli if d is not None]
+        return dli, latdli
+
+    def _run_monte_carlo(self):
+
+        def is_valid(rand_p):
+            d = rand_p.dist_to_path
+            if (d is None or abs(d) >= shell_width or rand_p.is_within_hole or
+                    rand_p in mcli[n]["pli"]):
+                return False
+            if self.opt.monte_carlo_simulation_window == "shell":
+                return True
+            elif self.opt.monte_carlo_simulation_window == "positive shell" and d >= 0:
+                return True
+            elif self.opt.monte_carlo_simulation_window == "negative shell" and -d <= 0:
+                return True
+            return False
+
+        pli = self.pli
+        if self.opt.monte_carlo_simulation_window == "shell":
+            # particles outside shell have been discarded
+            numpoints = len(pli)
+        elif self.opt.monte_carlo_simulation_window == "positive shell":
+            numpoints = len([p for p in pli if p.dist_to_path >= 0])
+        elif self.opt.monte_carlo_simulation_window == "negative shell":
+            numpoints = len([p for p in pli if p.dist_to_path <= 0])
+        else:
+            return []
+        box = self.path.bounding_box()
+        shell_width = geometry.to_pixel_units(self.opt.shell_width,
+                                              self.pixelwidth)
+        mcli = []
+        #dot_progress(reset=True)
+        for n in range(0, self.opt.monte_carlo_runs):
+            if self.opt.stop_requested:
+                return []
+            #dot_progress()
+            mcli.append({"pli": [],
+                         "simulated - simulated": {"dist": [], "latdist": []},
+                         "simulated - particle": {"dist": [], "latdist": []},
+                         "particle - simulated": {"dist": [], "latdist": []},
+                         "clusterli": []})
+            for __ in range(0, numpoints):
+                while True:
+                    x = random.randint(int(box[0].x - shell_width),
+                                       int(box[1].x + shell_width) + 1)
+                    y = random.randint(int(box[0].y - shell_width),
+                                       int(box[2].y + shell_width) + 1)
+                    p = Point(x, y, profile=self)
+                    if is_valid(p):
+                        break
+                # escape the while loop when a valid simulated point
+                # is found
+                mcli[n]["pli"].append(p)
+            for p in mcli[n]["pli"]:
+                p.determine_stuff()
+            if self.opt.interpoint_relations["simulated - simulated"]:
+                distlis = self._get_same_interpoint_distances(mcli[n]["pli"])
+                mcli[n]["simulated - simulated"]["dist"].append(distlis[0])
+                mcli[n]["simulated - simulated"]["latdist"].append(distlis[1])
+            if self.opt.interpoint_relations["simulated - particle"]:
+                distlis = self._get_interpoint_distances2(mcli[n]["pli"], pli)
+                mcli[n]["simulated - particle"]["dist"].append(distlis[0])
+                mcli[n]["simulated - particle"]["latdist"].append(distlis[1])
+            if self.opt.interpoint_relations["particle - simulated"]:
+                distlis = self._get_interpoint_distances2(pli, mcli[n]["pli"])
+                mcli[n]["particle - simulated"]["dist"].append(distlis[0])
+                mcli[n]["particle - simulated"]["latdist"].append(distlis[1])
+        if self.opt.determine_clusters:
+            #dot_progress(reset=True)
+            for n, li in enumerate(mcli):
+                #dot_progress()
+                mcli[n]["clusterli"] = self._determine_clusters(li["pli"])
+        self.mcli = mcli
+        sys.stdout.write("\n")
+
+    def _process_clusters(self, clusterli):
+        for c in clusterli:
+            if self.opt.stop_requested:
+                return
+            c.convex_hull = geometry.convex_hull(c)
+            c.dist_to_path = c.convex_hull.centroid().perpend_dist(self.path, posloc=self.posloc)
+        for c in clusterli:
+            if self.opt.stop_requested:
+                return
+            c.nearest_cluster = ClusterData()
+            if len(clusterli) == 1:
+                c.dist_to_nearest_cluster = -1
+                return
+            c.dist_to_nearest_cluster = sys.maxsize
+            for c2 in clusterli:
+                if c2 != c:
+                    d = c.lateral_dist_to_cluster(c2, self.path)
+                    if d < c.dist_to_nearest_cluster:
+                        c.dist_to_nearest_cluster = d
+                        c.nearest_cluster = c2
+
+    def _determine_clusters(self, pointli):
+        """ Partition pointli into clusters; each cluster contains all points
+            that are less than opt.within_cluster_dist from at least one
+            other point in the cluster
+        """
+        if self.opt.within_cluster_dist < 0:
+            return
+        clusterli = []
+        for p1 in pointli:
+            if self.opt.stop_requested:
+                return []
+            if p1.cluster:
+                continue
+            for p2 in pointli:
+                if p1 != p2 and p1.dist(p2) <= geometry.to_pixel_units(
+                        self.opt.within_cluster_dist,
+                        self.pixelwidth):
+                    if p2.cluster is not None:
+                        p1.cluster = p2.cluster
+                        clusterli[p1.cluster].append(p1)
+                        break
+            else:
+                p1.cluster = len(clusterli)
+                clusterli.append(ClusterData([p1]))
+        self._process_clusters(clusterli)
+        return clusterli
 
     def __parse(self):
         """ Parse profile data from input file 
@@ -162,8 +462,7 @@ class ProfileData:
                     self.pixelwidth = float(s.split(" ")[1])
                     self.metric_unit = s.split(" ")[2]
                 except (IndexError, ValueError):
-                    raise ProfileError(self, 
-                                       "PIXELWIDTH is not a valid number")
+                    raise ProfileError(self, "PIXELWIDTH is not a valid number")
             elif s.split(" ")[0].upper() == "POSLOC":
                 try:
                     x, y = s.split(" ", 1)[1].split(", ")
@@ -171,26 +470,18 @@ class ProfileData:
                 except (IndexError, ValueError):
                     raise ProfileError(self, "POSLOC not valid")
             elif s.upper() == "PATH":
-                self.path = geometry.SegmentedPath(self.__get_coords(li,
-                                                                     "path"))
+                self.path = geometry.SegmentedPath(self.__get_coords(li, "path"))
             elif s.upper() == "HOLE":
-                self.holeli.append(
-                    geometry.SegmentedPath(self.__get_coords(li, "hole")))
+                self.holeli.append(geometry.SegmentedPath(self.__get_coords(li, "hole")))
             elif s.upper() in ("POINTS", "PARTICLES"):
-                pli = self.__get_coords(li, "particle")
-                for p in pli: 
-                    self.pli.append(Particle(p.x, p.y, ptype="particle"))
+                self.pli = PointList(self.__get_coords(li, "particle"), "particle", self)
             elif s.upper() == "GRID":
-                gridli = self.__get_coords(li, "grid")
-                for g in gridli: 
-                    self.gridli.append(Particle(g.x, g.y, ptype="grid"))
+                __ = PointList(self.__get_coords(li, "grid"), "grid", self)
+                profile_warning(self, "Grid found; however, grids are no longer supported")
             elif s.upper() == "RANDOM_POINTS":
-                randomli = self.__get_coords(li, "random")
-                for r in randomli: 
-                    self.randomli.append(Particle(r.x, r.y, ptype="random"))
+                self.randomli = PointList(self.__get_coords(li, "random"), "random", self)
             elif s[0] != "#":          # unless specifically commented out           
-                profile_warning(self, "Unrecognized string '" + s +
-                                    "' in input file")
+                profile_warning(self, "Unrecognized string '%s' in input file" % s)
         # Now, let's see if everything was found
         self.__check_parsed_data()
 
@@ -206,10 +497,9 @@ class ProfileData:
         sys.stdout.write("  Profile id: %s\n" % self.id)
         sys.stdout.write("  Comment: %s\n" % self.comment)
         try:
-            sys.stdout.write("  Pixel width: %.2f " % self.pixelwidth)
+            sys.stdout.write("  Pixel width: %.2f " % float(self.pixelwidth))
         except AttributeError:
-            raise ProfileError(self,
-                               "No valid pixel width found in input file")
+            raise ProfileError(self, "No valid pixel width found in input file")
         try:
             sys.stdout.write("%s\n" % self.metric_unit)
         except AttributeError:
@@ -218,8 +508,7 @@ class ProfileData:
             if not hasattr(self.opt, "use_polarity") or self.opt.use_polarity:
                 sys.stdout.write("  Polarity: defined.\n")
                 self.opt.use_polarity = True
-            elif hasattr(self.opt, "use_polarity") and \
-                    not self.opt.use_polarity:
+            elif hasattr(self.opt, "use_polarity") and not self.opt.use_polarity:
                 raise ProfileError(self, "Polarity defined but not expected")
         else:
             if hasattr(self.opt, "use_polarity") and self.opt.use_polarity:
@@ -232,16 +521,6 @@ class ProfileData:
             sys.stdout.write("  Path nodes: %d\n" % len(self.path))
         sys.stdout.write("  Holes: %d\n" % len(self.holeli))
         sys.stdout.write("  Particles: %d\n" % len(self.pli))
-        if self.gridli:
-            if not hasattr(self.opt, "use_grid") or self.opt.use_grid:
-                sys.stdout.write("  Grid specified.\n")
-                self.opt.use_grid = True
-            elif hasattr(self.opt, "use_grid") and not self.opt.use_grid:
-                raise ProfileError(self, "Grid found but not expected")
-        else:
-            if hasattr(self.opt, "use_grid") and self.opt.use_grid:
-                raise ProfileError(self, "Grid expected but not found")
-            self.opt.use_grid = False
         if self.randomli:
             if not hasattr(self.opt, "use_random") or self.opt.use_random:
                 sys.stdout.write("  Random points specified.\n")
@@ -254,14 +533,11 @@ class ProfileData:
             self.opt.use_random = False
         for n, h in enumerate(self.holeli):
             if not h.is_simple_polygon():
-                raise ProfileError(self, 
-                                   "Profile hole %d is not a simple polygon" 
-                                    % (n + 1))
+                raise ProfileError(self, "Profile hole %d is not a simple polygon" % (n + 1))
             for n2, h2 in enumerate(self.holeli[n + 1:]):
                 if h.overlaps_polygon(h2):
-                    raise ProfileError(self, 
-                                       "Profile hole %d overlaps with hole %d "
-                                       % (n + 1, n + n2 + 2))                                    
+                    raise ProfileError(self, "Profile hole %d overlaps with hole %d "
+                                       % (n + 1, n + n2 + 2))
                          
     def __check_path(self):
         """ Make sure that path does not intersect with itself
@@ -293,7 +569,7 @@ class ProfileData:
                     sys.stdout.write("Duplicate %s coordinates %s: skipping "
                                      "2nd instance\n" % (coord_type, p))
                 else:
-                    pointli.append(Particle(p.x, p.y, ptype=coord_type))
+                    pointli.append(Point(p.x, p.y, ptype=coord_type))
             except ValueError:
                 if s[0] != "#":
                     profile_warning(self, "'%s' not valid %s coordinates"
@@ -327,7 +603,7 @@ class ProfileData:
         # the end nodes but not with the rest of those segments
         path_shortened = [self.path[n] for n in range(1, len(self.path) - 2)]
         c = l.center_point()
-        cdist = Particle(c.x, c.y).perpend_dist(self.path, posloc=self.posloc)
+        cdist = Point(c.x, c.y).perpend_dist(self.path, posloc=self.posloc)
         xnum = self.path[0].segment_crossing_number(path_shortened,
                                                     self.path[-1])
         if xnum == 0:
@@ -360,8 +636,8 @@ class ProfileData:
         if self.shape() in ("flat", "w-like", "s-like"):
             return None
         c = self.path.centroid()
-        return (1000 * Particle(c.x, c.y).perpend_dist(self.path,
-                                                       posloc=self.posloc) /
+        return (1000 * Point(c.x, c.y).perpend_dist(self.path,
+                                                    posloc=self.posloc) /
                 self.path.area())
 
     def curvature_dev_from_straight(self):
@@ -388,7 +664,7 @@ class OptionData:
         self.interparticleSummary = False
         self.individualProfileOutput = False
         self.output_file_format = "excel"
-        self.output_filename_ext = ".xls"
+        self.output_filename_ext = ".xlsx"
         self.input_filename_ext = ".dtp"
         self.output_filename_suffix = ''
         self.output_filename_other_suffix = ''
@@ -399,8 +675,21 @@ class OptionData:
         self.output_dir = ''
         self.use_polarity = False
         self.use_random = False
-        self.use_grid = False
         self.stop_requested = False
+        self.determine_clusters = False
+        self.within_cluster_dist = 50
+        self.run_monte_carlo = False
+        self.monte_carlo_runs = 99
+        self.monte_carlo_simulation_window = 'shell'
+        self.determine_interpoint_dists = False
+        self.interpoint_dist_mode = 'nearest neighbour'
+        self.interpoint_relations = {'particle - particle': True,
+                                     'random - particle': True,
+                                     'particle - simulated': False,
+                                     'simulated - particle': False,
+                                     'simulated - simulated': False}
+        self.interpoint_shortest_dist = True
+        self.interpoint_lateral_dist = False
 # end of class OptionData
 
 

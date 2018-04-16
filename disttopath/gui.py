@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Mar 29 2018)
+## Python code generated with wxFormBuilder (version Jun 17 2015)
 ## http://www.wxformbuilder.org/
 ##
-## PLEASE DO *NOT* EDIT THIS FILE!
+## PLEASE DO "NOT" EDIT THIS FILE!
 ###########################################################################
 
 import wx
-import wx.adv
 import wx.xrc
 
 wx.ID_ADDFILE = 1000
 wx.ID_REMOVEFILE = 1001
 wx.ID_VIEWFILE = 1002
-wx.ID_OTHERSUFFIXCHECKBOX = 1003
-wx.ID_SAVELOGCHECKBOX = 1004
-wx.ID_START = 1005
+wx.ID_MONTECARLOCHECKBOX = 1003
+wx.ID_CLUSTERCHECKBOX = 1004
+wx.ID_OTHERSUFFIXCHECKBOX = 1005
+wx.ID_SAVELOGCHECKBOX = 1006
+wx.ID_START = 1007
 
 ###########################################################################
 ## Class MainFrame
@@ -88,7 +89,7 @@ class MainFrame ( wx.Frame ):
 		
 		GenAnalysisOptionsSizer.Add( self.SpatResLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		self.SpatResSpinCtrl = wx.SpinCtrl( self.AnalysisOptionsTab, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 0, 1000, 0 )
+		self.SpatResSpinCtrl = wx.SpinCtrl( self.AnalysisOptionsTab, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 0, 1000, 25 )
 		self.SpatResSpinCtrl.SetToolTip( u"Spatial resolution of the point pattern" )
 		
 		GenAnalysisOptionsSizer.Add( self.SpatResSpinCtrl, 0, wx.ALL, 5 )
@@ -118,6 +119,133 @@ class MainFrame ( wx.Frame ):
 		
 		
 		AnalysisOptionsSizer.Add( GenAnalysisOptionsSizer, 1, wx.EXPAND|wx.TOP|wx.RIGHT, 5 )
+		
+		InterpointSizer = wx.StaticBoxSizer( wx.StaticBox( self.AnalysisOptionsTab, wx.ID_ANY, u"Interpoint distances" ), wx.VERTICAL )
+		
+		InterpointSizer2 = wx.GridBagSizer( 0, 0 )
+		InterpointSizer2.SetFlexibleDirection( wx.BOTH )
+		InterpointSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+		
+		InterpointModeChoiceChoices = []
+		self.InterpointModeChoice = wx.Choice( InterpointSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, InterpointModeChoiceChoices, 0 )
+		self.InterpointModeChoice.SetSelection( 0 )
+		self.InterpointModeChoice.SetToolTip( u"Type of distance to calculate" )
+		
+		InterpointSizer2.Add( self.InterpointModeChoice, wx.GBPosition( 1, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
+		
+		InterpointRelationsCheckListBoxChoices = [wx.EmptyString]
+		self.InterpointRelationsCheckListBox = wx.CheckListBox( InterpointSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, InterpointRelationsCheckListBoxChoices, 0|wx.HSCROLL )
+		InterpointSizer2.Add( self.InterpointRelationsCheckListBox, wx.GBPosition( 2, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+		
+		self.InterpointRelationsLabel = wx.StaticText( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Distances to\ndetermine:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.InterpointRelationsLabel.Wrap( -1 )
+		InterpointSizer2.Add( self.InterpointRelationsLabel, wx.GBPosition( 2, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+		
+		self.InterpointModeLabel = wx.StaticText( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Distance mode:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.InterpointModeLabel.Wrap( -1 )
+		self.InterpointModeLabel.SetToolTip( u"Type of distance to calculate" )
+		
+		InterpointSizer2.Add( self.InterpointModeLabel, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.InterpointCheckBox = wx.CheckBox( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Calculate interpoint distances", wx.DefaultPosition, wx.DefaultSize, 0 )
+		InterpointSizer2.Add( self.InterpointCheckBox, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 2 ), wx.ALL|wx.EXPAND, 5 )
+		
+		InterpointShortLatDistSizer = wx.FlexGridSizer( 2, 2, 0, 0 )
+		InterpointShortLatDistSizer.SetFlexibleDirection( wx.BOTH )
+		InterpointShortLatDistSizer.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+		
+		self.ShortestDistCheckBox = wx.CheckBox( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Shortest distance", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.ShortestDistCheckBox.SetToolTip( u"Shortest distance between the points" )
+		
+		InterpointShortLatDistSizer.Add( self.ShortestDistCheckBox, 0, wx.ALL, 5 )
+		
+		self.LateralDistCheckBox = wx.CheckBox( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Distance along path", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.LateralDistCheckBox.SetToolTip( u"Lateral distance along path between the projections of the points on the path" )
+		
+		InterpointShortLatDistSizer.Add( self.LateralDistCheckBox, 0, wx.ALL, 5 )
+		
+		
+		InterpointSizer2.Add( InterpointShortLatDistSizer, wx.GBPosition( 3, 0 ), wx.GBSpan( 1, 3 ), wx.EXPAND, 5 )
+		
+		
+		InterpointSizer.Add( InterpointSizer2, 1, wx.EXPAND, 5 )
+		
+		
+		AnalysisOptionsSizer.Add( InterpointSizer, 1, wx.EXPAND|wx.ALL, 5 )
+		
+		MonteCarloSizer = wx.StaticBoxSizer( wx.StaticBox( self.AnalysisOptionsTab, wx.ID_ANY, u"Monte Carlo simulations" ), wx.VERTICAL )
+		
+		MonteCarloSizer2 = wx.GridBagSizer( 0, 0 )
+		MonteCarloSizer2.SetFlexibleDirection( wx.BOTH )
+		MonteCarloSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+		
+		self.MonteCarloCheckBox = wx.CheckBox( MonteCarloSizer.GetStaticBox(), wx.ID_MONTECARLOCHECKBOX, u"Perform Monte Carlo simulations", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.MonteCarloCheckBox.SetToolTip( u"Generate a random point pattern evenly distributed over the profile (plus the shell defined by the skipping distance)" )
+		
+		MonteCarloSizer2.Add( self.MonteCarloCheckBox, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 2 ), wx.ALL|wx.EXPAND, 5 )
+		
+		self.MonteCarloRunsLabel = wx.StaticText( MonteCarloSizer.GetStaticBox(), wx.ID_ANY, u"Number of runs:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.MonteCarloRunsLabel.Wrap( -1 )
+		self.MonteCarloRunsLabel.SetToolTip( u"Number of point patterns to generate for each profile" )
+		
+		MonteCarloSizer2.Add( self.MonteCarloRunsLabel, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.MonteCarloRunsSpinCtrl = wx.SpinCtrl( MonteCarloSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 1, 999, 99 )
+		self.MonteCarloRunsSpinCtrl.SetToolTip( u"Number of point patterns to generate for each profile" )
+		
+		MonteCarloSizer2.Add( self.MonteCarloRunsSpinCtrl, wx.GBPosition( 1, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+		
+		self.SimulationWindowLabel = wx.StaticText( MonteCarloSizer.GetStaticBox(), wx.ID_ANY, u"Simulation window:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.SimulationWindowLabel.Wrap( -1 )
+		self.SimulationWindowLabel.SetToolTip( u"The region over which simulated points are generated" )
+		
+		MonteCarloSizer2.Add( self.SimulationWindowLabel, wx.GBPosition( 2, 0 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		SimulationWindowChoiceChoices = []
+		self.SimulationWindowChoice = wx.Choice( MonteCarloSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, SimulationWindowChoiceChoices, 0 )
+		self.SimulationWindowChoice.SetSelection( 0 )
+		self.SimulationWindowChoice.SetToolTip( u"The region over which simulated points are generated" )
+		
+		MonteCarloSizer2.Add( self.SimulationWindowChoice, wx.GBPosition( 2, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+		MonteCarloSizer.Add( MonteCarloSizer2, 1, wx.EXPAND, 5 )
+		
+		
+		AnalysisOptionsSizer.Add( MonteCarloSizer, 1, wx.EXPAND|wx.ALL, 5 )
+		
+		ClusterSizer = wx.StaticBoxSizer( wx.StaticBox( self.AnalysisOptionsTab, wx.ID_ANY, u"Clusters" ), wx.VERTICAL )
+		
+		ClusterSizer2 = wx.GridBagSizer( 0, 0 )
+		ClusterSizer2.SetFlexibleDirection( wx.BOTH )
+		ClusterSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+		
+		self.ClusterCheckBox = wx.CheckBox( ClusterSizer.GetStaticBox(), wx.ID_CLUSTERCHECKBOX, u"Determine point clusters", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.ClusterCheckBox.SetToolTip( u"Partition points into clusters" )
+		
+		ClusterSizer2.Add( self.ClusterCheckBox, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 2 ), wx.ALL, 5 )
+		
+		self.ClusterDistLabel = wx.StaticText( ClusterSizer.GetStaticBox(), wx.ID_ANY, u"Within-cluster distance:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.ClusterDistLabel.Wrap( -1 )
+		self.ClusterDistLabel.SetToolTip( u"Two points closer than this distance from each other are assigned to the same cluster" )
+		
+		ClusterSizer2.Add( self.ClusterDistLabel, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5 )
+		
+		self.ClusterDistSpinCtrl = wx.SpinCtrl( ClusterSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 1, 1000, 50 )
+		self.ClusterDistSpinCtrl.SetToolTip( u"Two points closer than this distance from each other are assigned to the same cluster" )
+		
+		ClusterSizer2.Add( self.ClusterDistSpinCtrl, wx.GBPosition( 1, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+		
+		self.ClusterDistUnitLabel = wx.StaticText( ClusterSizer.GetStaticBox(), wx.ID_ANY, u"metric units", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_LEFT )
+		self.ClusterDistUnitLabel.Wrap( -1 )
+		self.ClusterDistUnitLabel.SetToolTip( u"Two points closer than this distance from each other are assigned to the same cluster" )
+		
+		ClusterSizer2.Add( self.ClusterDistUnitLabel, wx.GBPosition( 1, 2 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		
+		ClusterSizer.Add( ClusterSizer2, 1, wx.EXPAND, 5 )
+		
+		
+		AnalysisOptionsSizer.Add( ClusterSizer, 1, wx.EXPAND|wx.ALL, 5 )
 		
 		
 		self.AnalysisOptionsTab.SetSizer( AnalysisOptionsSizer )
@@ -232,6 +360,8 @@ class MainFrame ( wx.Frame ):
 		
 		self.LogTextCtrl = wx.TextCtrl( LogSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), wx.HSCROLL|wx.TE_MULTILINE )
 		self.LogTextCtrl.SetMaxLength( 0 ) 
+		self.LogTextCtrl.SetFont( wx.Font( 8, 70, 90, 90, False, wx.EmptyString ) )
+		
 		LogSizer.Add( self.LogTextCtrl, 1, wx.ALL|wx.EXPAND, 5 )
 		
 		
@@ -258,7 +388,7 @@ class MainFrame ( wx.Frame ):
 		MainButtonSizer.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 		
 		
-		MainButtonSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		MainButtonSizer.Add( 0, 0, 1, wx.EXPAND, 5 )
 		
 		self.StartButton = wx.Button( self.MainButtonPanel, wx.ID_START, u"&Start", wx.DefaultPosition, wx.DefaultSize, 0 )
 		MainButtonSizer.Add( self.StartButton, 0, wx.ALL, 5 )
@@ -288,6 +418,10 @@ class MainFrame ( wx.Frame ):
 		self.AddButton.Bind( wx.EVT_BUTTON, self.OnAddFile )
 		self.RemoveButton.Bind( wx.EVT_BUTTON, self.OnRemoveFile )
 		self.ViewButton.Bind( wx.EVT_BUTTON, self.OnViewFile )
+		self.InterpointCheckBox.Bind( wx.EVT_CHECKBOX, self.OnInterpointCheckbox )
+		self.MonteCarloCheckBox.Bind( wx.EVT_CHECKBOX, self.OnMonteCarloCheckBox )
+		self.SimulationWindowChoice.Bind( wx.EVT_CHOICE, self.OnSimulationWindowChoice )
+		self.ClusterCheckBox.Bind( wx.EVT_CHECKBOX, self.OnClusterCheckBox )
 		self.OtherSuffixCheckBox.Bind( wx.EVT_CHECKBOX, self.OnOtherSuffixCheckBox )
 		self.SaveLogCheckBox.Bind( wx.EVT_CHECKBOX, self.OnSaveLogCheckBox )
 		self.LogFilePickerCtrl.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnSaveLogCheckBox )
@@ -308,6 +442,18 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 	
 	def OnViewFile( self, event ):
+		event.Skip()
+	
+	def OnInterpointCheckbox( self, event ):
+		event.Skip()
+	
+	def OnMonteCarloCheckBox( self, event ):
+		event.Skip()
+	
+	def OnSimulationWindowChoice( self, event ):
+		event.Skip()
+	
+	def OnClusterCheckBox( self, event ):
 		event.Skip()
 	
 	def OnOtherSuffixCheckBox( self, event ):
@@ -402,10 +548,10 @@ class AboutDialog ( wx.Dialog ):
 		TopSizer.Add( self.InitialSpaceSizer, 0, wx.ALL, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		TitleSizer = wx.FlexGridSizer( 1, 3, 0, 0 )
 		TitleSizer.AddGrowableCol( 2 )
@@ -421,7 +567,7 @@ class AboutDialog ( wx.Dialog ):
 		
 		self.TitleLabel = wx.StaticText( self, wx.ID_ANY, u"TitleLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.TitleLabel.Wrap( -1 )
-		self.TitleLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.TitleLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
 		
 		TitleSizer.Add( self.TitleLabel, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
@@ -429,43 +575,43 @@ class AboutDialog ( wx.Dialog ):
 		TopSizer.Add( TitleSizer, 1, wx.EXPAND|wx.RIGHT, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.VersionLabel = wx.StaticText( self, wx.ID_ANY, u"VersionLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.VersionLabel.Wrap( -1 )
-		self.VersionLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString ) )
+		self.VersionLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 90, False, wx.EmptyString ) )
 		
 		TopSizer.Add( self.VersionLabel, 0, wx.ALIGN_BOTTOM|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.LastModLabel = wx.StaticText( self, wx.ID_ANY, u"LastModLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.LastModLabel.Wrap( -1 )
 		TopSizer.Add( self.LastModLabel, 0, wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.CopyrightLabel = wx.StaticText( self, wx.ID_ANY, u"CopyrightLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.CopyrightLabel.Wrap( -1 )
 		TopSizer.Add( self.CopyrightLabel, 0, wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.LicenseLabel = wx.StaticText( self, wx.ID_ANY, u"LicenseLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.LicenseLabel.Wrap( -1 )
 		TopSizer.Add( self.LicenseLabel, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		HyperLinksSizer = wx.FlexGridSizer( 2, 2, 0, 0 )
 		HyperLinksSizer.AddGrowableCol( 1 )
@@ -476,21 +622,21 @@ class AboutDialog ( wx.Dialog ):
 		self.EmailLabel.Wrap( -1 )
 		HyperLinksSizer.Add( self.EmailLabel, 0, wx.ALL, 5 )
 		
-		self.EmailHyperlink = wx.adv.HyperlinkCtrl( self, wx.ID_ANY, u"EmailHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize )
+		self.EmailHyperlink = wx.HyperlinkCtrl( self, wx.ID_ANY, u"EmailHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
 		HyperLinksSizer.Add( self.EmailHyperlink, 0, wx.ALL, 5 )
 		
 		self.WebLabel = wx.StaticText( self, wx.ID_ANY, u"Web:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.WebLabel.Wrap( -1 )
 		HyperLinksSizer.Add( self.WebLabel, 0, wx.ALL, 5 )
 		
-		self.WebHyperlink = wx.adv.HyperlinkCtrl( self, wx.ID_ANY, u"WebHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize )
+		self.WebHyperlink = wx.HyperlinkCtrl( self, wx.ID_ANY, u"WebHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
 		HyperLinksSizer.Add( self.WebHyperlink, 0, wx.ALL, 5 )
 		
 		
 		TopSizer.Add( HyperLinksSizer, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT, 5 )
 		
 		
-		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
 		AboutSizer.Add( TopSizer, 1, wx.EXPAND, 5 )
@@ -521,77 +667,6 @@ class AboutDialog ( wx.Dialog ):
 	
 	# Virtual event handlers, overide them in your derived class
 	def OnClose( self, event ):
-		event.Skip()
-	
-
-###########################################################################
-## Class ProgressDialog
-###########################################################################
-
-class ProgressDialog ( wx.Dialog ):
-	
-	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Progress", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
-		
-		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
-		
-		MainSizer = wx.FlexGridSizer( 2, 1, 0, 0 )
-		MainSizer.SetFlexibleDirection( wx.BOTH )
-		MainSizer.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
-		
-		Sizer2 = wx.GridBagSizer( 0, 0 )
-		Sizer2.SetFlexibleDirection( wx.BOTH )
-		Sizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
-		
-		self.ProcessingLabel = wx.StaticText( self, wx.ID_ANY, u"Processing:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.ProcessingLabel.Wrap( -1 )
-		Sizer2.Add( self.ProcessingLabel, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
-		
-		self.FilenameLabel = wx.StaticText( self, wx.ID_ANY, u"filename", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.FilenameLabel.Wrap( -1 )
-		Sizer2.Add( self.FilenameLabel, wx.GBPosition( 0, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
-		
-		self.FileNumLabel = wx.StaticText( self, wx.ID_ANY, u"(File n of tot)", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.FileNumLabel.Wrap( -1 )
-		Sizer2.Add( self.FileNumLabel, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
-		
-		self.ProgressGauge = wx.Gauge( self, wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
-		Sizer2.Add( self.ProgressGauge, wx.GBPosition( 2, 0 ), wx.GBSpan( 1, 2 ), wx.ALL|wx.EXPAND, 5 )
-		
-		self.RemainingLabel = wx.StaticText( self, wx.ID_ANY, u"Time remaining:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.RemainingLabel.Wrap( -1 )
-		Sizer2.Add( self.RemainingLabel, wx.GBPosition( 3, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
-		
-		self.TimeLabel = wx.StaticText( self, wx.ID_ANY, u"0:0:0", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.TimeLabel.Wrap( -1 )
-		Sizer2.Add( self.TimeLabel, wx.GBPosition( 3, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
-		
-		
-		MainSizer.Add( Sizer2, 1, wx.EXPAND|wx.ALL, 5 )
-		
-		CancelsdbSizer = wx.StdDialogButtonSizer()
-		self.CancelsdbSizerCancel = wx.Button( self, wx.ID_CANCEL )
-		CancelsdbSizer.AddButton( self.CancelsdbSizerCancel )
-		CancelsdbSizer.Realize();
-		
-		MainSizer.Add( CancelsdbSizer, 1, wx.EXPAND|wx.ALL, 5 )
-		
-		
-		self.SetSizer( MainSizer )
-		self.Layout()
-		MainSizer.Fit( self )
-		
-		self.Centre( wx.BOTH )
-		
-		# Connect Events
-		self.CancelsdbSizerCancel.Bind( wx.EVT_BUTTON, self.OnCancel )
-	
-	def __del__( self ):
-		pass
-	
-	
-	# Virtual event handlers, overide them in your derived class
-	def OnCancel( self, event ):
 		event.Skip()
 	
 

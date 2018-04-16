@@ -24,7 +24,15 @@ def save_output(profileli, opt):
     def m(x, pixelwidth):
         return geometry.to_metric_units(x, pixelwidth)
 
+    def na(x):
+        if x in (None, -1):
+            return "N/A"
+        else:
+            return x
+
     def write_session_summary():
+        if not opt.outputs['session summary']:
+            return
         with file_io.FileWriter("session.summary", opt) as f:
             f.writerow(["%s version:" % version.title,
                        "%s (Last modified %s %s, %s)"
@@ -51,6 +59,8 @@ def save_output(profileli, opt):
                 f.writerows([[fn] for fn in err_fli])
 
     def write_profile_summary():
+        if not opt.outputs['profile summary']:
+            return
         with file_io.FileWriter("profile summary", opt) as f:
             f.writerow(["Path length",                       
                         "Particles (total)",
@@ -76,15 +86,23 @@ def save_output(profileli, opt):
                           len([p for p in pro.pli 
                                if (p.is_within_shell 
                                    and (p.dist_to_path >= 0))
-                               or p.is_assoc_with_path]),
-                          len([p for p in pro.pli if p.is_assoc_with_path]),
+                               or p.is_assocated_with_path]),
+                          len([p for p in pro.pli if p.is_associated_with_path]),
                           pro.id,
                           os.path.basename(pro.inputfn),
                           pro.comment] for pro in eval_proli])
                       
-    def write_particle_summary():
-        with file_io.FileWriter("particle.summary", opt) as f:
-            f.writerow(["Particle number (as appearing in input file)", 
+    def write_point_summary(ptype):
+        if ptype == "particle" and opt.outputs['particle summary']:
+            pli = "pli"
+            pstr = "particle"
+        elif ptype == "random" and opt.outputs['random summary'] and opt.use_random:
+            pli = "randomli"
+            pstr = "point"
+        else:
+            return
+        with file_io.FileWriter("%s.summary" % ptype, opt) as f:
+            f.writerow(["%s number (as appearing in input file)" % pstr.capitalize(),
                         "Perpendicular distance to path", 
                         "Lateral distance to center of path", 
                         "Lateral distance to center of path / path radius",
@@ -97,68 +115,147 @@ def save_output(profileli, opt):
                           m(p.dist_to_path, pro.pixelwidth), 
                           m(p.lateral_dist_path, pro.pixelwidth), 
                           p.lateral_dist_path / (pro.path.length() / 2),
-                          stringconv.yes_or_no(p.is_assoc_with_path),
+                          stringconv.yes_or_no(p.is_associated_with_path),
                           m(pro.path.length(), pro.pixelwidth),
                           pro.id,
                           os.path.basename(pro.inputfn), 
-                          pro.comment] for pro in eval_proli for n, p in enumerate(pro.pli)])
-            
-    def write_random_summary():
-        with file_io.FileWriter("random.summary", opt) as f:
-            f.writerow(["Point number (as appearing in input file)", 
-                        "Perpendicular distance to path", 
-                        "Lateral distance to center of path", 
-                        "Lateral distance to center of path / path radius",
-                        "Particle associated w/ path",
-                        "Path length",
-                        "Profile id",
-                        "Input file",
-                        "Comment"])
-            f.writerows([[n + 1,
-                          m(p.dist_to_path, pro.pixelwidth), 
-                          m(p.lateral_dist_path, pro.pixelwidth), 
-                          p.lateral_dist_path / (pro.path.length() / 2),
-                          stringconv.yes_or_no(p.is_assoc_with_path),
-                          m(pro.path.length(), pro.pixelwidth),
-                          pro.id,
-                          os.path.basename(pro.inputfn), 
-                          pro.comment] for pro in eval_proli for n, p in enumerate(pro.randomli)])
+                          pro.comment] for pro in eval_proli for n, p in
+                         enumerate(pro.__dict__[pli])])
 
-    def write_grid_summary():
-        with file_io.FileWriter("grid.summary", opt) as f:
-            f.writerow(["Point number (as appearing in input file)", 
-                        "Perpendicular distance to path", 
-                        "Lateral distance to center of path", 
-                        "Lateral distance to center of path / path radius",
-                        "Particle associated w/ path",
+    def write_cluster_summary():
+        if not opt.determine_clusters:
+            return
+        with file_io.FileWriter("cluster.summary", opt) as f:
+            f.writerow(["Cluster number",
+                        "Number of particles in cluster",
+                        "Distance of centroid to path",
+                        "Distance to nearest cluster along path "
                         "Path length",
-                        "Profile id",
+                        "Profile ID",
                         "Input file",
                         "Comment"])
-            f.writerows([[n + 1, 
-                          m(p.dist_to_path, pro.pixelwidth), 
-                          m(p.lateral_dist_path, pro.pixelwidth), 
-                          p.lateral_dist_path / (pro.path.length() / 2),
-                          stringconv.yes_or_no(p.is_assoc_with_path),
-                          m(pro.path.length(), pro.pixelwidth),
+            f.writerows([[n + 1,
+                          len(c),
+                          m(c.dist_to_path, pro.pixelwidth),
+                          m(na(c.dist_to_nearest_cluster), pro.pixelwidth),
                           pro.id,
-                          os.path.basename(pro.inputfn), 
-                          pro.comment] for pro in eval_proli for n, p in enumerate(pro.gridli)])
-            
-    def write_interparticle_summary():
-        with file_io.FileWriter("interparticle.summary", opt) as f:        
-            f.writerow(["P1", "P2", "Distance", "Input file"])
+                          os.path.basename(pro.inputfn),
+                          pro.comment] for pro in eval_proli for n, c in
+                         enumerate(pro.clusterli)])
+
+    def write_interpoint_summaries():
+        if not opt.determine_interpoint_dists:
+            return
+        ip_rels = dict([(key, val)
+                        for key, val in opt.interpoint_relations.items()
+                        if val and "simulated" not in key])
+        if not opt.use_random:
+            for key, val in opt.interpoint_relations.items():
+                if "random" in key and val:
+                    del ip_rels[key]
+        if (len(ip_rels) == 0 or not
+                (opt.interpoint_shortest_dist or opt.interpoint_lateral_dist)):
+            return
+        table = []
+        if opt.interpoint_dist_mode == 'all':
+            s = "all distances"
+        else:
+            s = "nearest neighbour distances"
+        table.append(["Mode: " + s])
+        headerli = list(ip_rels.keys())
+        prefixli = []
+        for key, val in ip_rels.items():
+            prefix = key[0] + key[key.index("- ") + 2] + "_"
+            prefixli.append(prefix)
+        if opt.interpoint_shortest_dist and opt.interpoint_lateral_dist:
+            headerli.extend(headerli)
+            prefixli.extend([t + 'lat' for t in prefixli])
+        topheaderli = []
+        if opt.interpoint_shortest_dist:
+            topheaderli.append("Shortest distances")
+            if opt.interpoint_lateral_dist:
+                topheaderli.extend([""] * (len(ip_rels) - 1))
+        if opt.interpoint_lateral_dist:
+            topheaderli.append("Lateral distances along path")
+        table.extend([topheaderli, headerli])
+        cols = [[] for _ in prefixli]
+        for pro in eval_proli:
+            for n, li in enumerate([pro.__dict__[prefix + "distli"]
+                                    for prefix in prefixli]):
+                cols[n].extend([m(e, pro.pixelwidth) for e in li])
+        # transpose cols and append to table
+        table.extend(map(lambda *col: [e if e is not None else "" for e in col], *cols))
+        with file_io.FileWriter("interpoint.distances", opt) as f:
+            f.writerows(table)
+
+    def write_mc_dist_to_path():
+
+        def m_li(*_li):
+            return [m(x, pro.pixelwidth) for x in _li]
+
+        if not opt.run_monte_carlo:
+            return
+        table = [["Run %d" % (n + 1)
+                  for n in range(0, opt.monte_carlo_runs)]]
+        for pro in eval_proli:
+            table.extend(map(m_li, *[[p.dist_to_path for p in li["pli"]]
+                                     for li in pro.mcli]))
+        with file_io.FileWriter(
+                "simulated.path.distances", opt) as f:
+            f.writerows(table)
+
+    def write_mc_ip_dists(dist_type):
+
+        def m_li(*_li):
+            return [m(x, pro.pixelwidth) for x in _li]
+
+        if not opt.run_monte_carlo:
+            return
+        for ip_type in [key for key, val in opt.interpoint_relations.items()
+                        if "simulated" in key and val]:
+            if ((dist_type == "shortest" and not opt.interpoint_shortest_dist)
+                or
+                    (dist_type == "lateral" and not opt.interpoint_lateral_dist)):
+                return
+            if dist_type == "lateral":
+                short_dist_type = "lat"
+            else:
+                short_dist_type = ""
+            table = [["Run %d" % (n + 1)
+                      for n in range(0, opt.monte_carlo_runs)]]
             for pro in eval_proli:
-                n = 0
-                for n1 in range(0, len(pro.pli)):
-                    for n2 in range(n1 + 1, len(pro.pli)):
-                        # if (pro.pli[n1].is_assoc_with_path and
-                        #     pro.pli[n2].is_assoc_with_path):
-                        f.writerow([n1 + 1, n2 + 1,
-                                    m(pro.pli[n1].dist(pro.pli[n2]), pro.pixelwidth),
-                                    os.path.basename(pro.inputfn)])
-                        n += 1
-            
+                table.extend(map(m_li,
+                                 *[p for li in pro.mcli
+                                   for p in li[ip_type]
+                                   ["%sdist" % short_dist_type]]))
+            with file_io.FileWriter("%s.interpoint.%s.distance.summary"
+                                            % (ip_type.replace(" ", ""),
+                                               dist_type), opt) as f:
+                f.writerows(table)
+
+    def write_mc_cluster_summary():
+        if not (opt.determine_clusters and opt.run_monte_carlo):
+            return
+        table = [["N particles in cluster", "Run",
+                  "Distance of centroid to path",
+                  "Distance to nearest cluster along path "
+                  "membrane",
+                  "Profile ID",
+                  "Input file",
+                  "Comment"]]
+        for pro in eval_proli:
+            for n in range(0, opt.monte_carlo_runs):
+                for c in pro.mcli[n]["clusterli"]:
+                    table.append([len(c), n + 1,
+                                  m(c.dist_to_path, pro.pixelwidth),
+                                  m(na(c.dist_to_nearest_cluster),
+                                    pro.pixelwidth),
+                                  pro.id,
+                                  os.path.basename(pro.inputfn),
+                                  pro.comment])
+        with file_io.FileWriter("simulated.cluster.summary", opt) as f:
+            f.writerows(table)
+
     sys.stdout.write("\nSaving summaries...\n")
     opt.save_result = {'any_saved': False, 'any_err': False}
     eval_proli = [profile for profile in profileli if not profile.errflag]
@@ -167,43 +264,51 @@ def save_output(profileli, opt):
     warn_fli = [profile.inputfn for profile in profileli if profile.warnflag]
     err_fli = [profile.inputfn for profile in profileli if profile.errflag]
     nop_fli = [profile.inputfn for profile in profileli if not profile.pli]
-    if opt.outputs['session summary']:
-        write_session_summary()
-    if opt.outputs['profile summary']:
-        write_profile_summary()
-    if opt.outputs['particle summary']:
-        write_particle_summary()
-    if opt.outputs['random summary'] and opt.use_random:
-        write_random_summary()
-    if opt.gridSummary and opt.use_grid:
-        write_grid_summary()
-    if opt.interparticleSummary:
-        write_interparticle_summary()
+    write_session_summary()
+    write_profile_summary()
+    write_point_summary('particle')
+    write_point_summary('random')
+    write_interpoint_summaries()
+    write_cluster_summary()
+    write_mc_dist_to_path()
+    write_mc_ip_dists("shortest")
+    write_mc_ip_dists("lateral")
+    write_mc_cluster_summary()
 
 
 def reset_options(opt):
     """ Deletes certain options that should always be set anew for each run
         (each time the "Start" button is pressed)
     """
-    if hasattr(opt, "metric_unit"):
-        delattr(opt, "metric_unit")
-    if hasattr(opt, "use_polarity"):
-        delattr(opt, "use_polarity")
-    if hasattr(opt, "use_grid"):
-        delattr(opt, "use_grid")
-    if hasattr(opt, "use_random"):
-        delattr(opt, "use_random")
+    for optstr in ('metric_unit', 'use_polarity', 'use_grid', 'use_random'):
+        if hasattr(opt, optstr):
+            delattr(opt, optstr)
 
 
 def show_options(opt):
     sys.stdout.write("{} version: {} (Last modified {} {}, {})\n".format(
                      version.title, version.version, *version.date))
     sys.stdout.write("Output file format: %s\n" % opt.output_file_format)
-    sys.stdout.write("Suffix of output files: %s\n"
-                     % opt.output_filename_suffix)
+    sys.stdout.write("Suffix of output files: %s\n" % opt.output_filename_suffix)
     sys.stdout.write("Output directory: %s\n" % opt.output_dir)
     sys.stdout.write("Spatial resolution: %d\n" % opt.spatial_resolution)
-    sys.stdout.write("Shell width: %d metric units\n" % opt.shell_width)    
+    sys.stdout.write("Shell width: %d metric units\n" % opt.shell_width)
+    sys.stdout.write("Interpoint distances calculated: %s\n"
+                     % stringconv.yes_or_no(opt.determine_interpoint_dists))
+    if opt.determine_interpoint_dists:
+        sys.stdout.write("Interpoint distance mode: %s\n" % opt.interpoint_dist_mode.capitalize())
+        sys.stdout.write("Shortest interpoint distances: %s\n"
+                         % stringconv.yes_or_no(opt.interpoint_shortest_dist))
+        sys.stdout.write("Lateral interpoint distances: %s\n"
+                         % stringconv.yes_or_no(opt.interpoint_lateral_dist))
+    sys.stdout.write("Monte Carlo simulations performed: %s\n"
+                     % stringconv.yes_or_no(opt.run_monte_carlo))
+    if opt.run_monte_carlo:
+        sys.stdout.write("Number of Monte Carlo runs: %d\n" % opt.monte_carlo_runs)
+        sys.stdout.write("Monte Carlo simulation window: %s\n" % opt.monte_carlo_simulation_window)
+    sys.stdout.write("Clusters determined: %s\n" % stringconv.yes_or_no(opt.determine_clusters))
+    if opt.determine_clusters:
+        sys.stdout.write("Within-cluster distance: %d\n" % opt.within_cluster_dist)
 
 
 def get_output_format(opt):
@@ -211,8 +316,7 @@ def get_output_format(opt):
         try:
             import openpyxl
         except ImportError:
-            sys.stdout.write("Unable to write Excel files: resorting to csv "
-                             "format.\n")
+            sys.stdout.write("Unable to write Excel files: resorting to csv format.\n")
             opt.output_file_format = "csv"
     if opt.output_file_format == 'csv':
         opt.output_filename_ext = ".csv"
