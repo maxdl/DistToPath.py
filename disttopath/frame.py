@@ -82,6 +82,29 @@ class Frame(gui.MainFrame):
         finally:
             dlg.Destroy()
 
+    def OnInterpointCheckbox(self, event):
+        self.InterpointModeChoice.Enable(self.InterpointCheckBox.GetValue())
+        self.InterpointModeLabel.Enable(self.InterpointCheckBox.GetValue())
+        self.InterpointRelationsCheckListBox.Enable(
+            self.InterpointCheckBox.GetValue())
+        self.InterpointRelationsLabel.Enable(self.InterpointCheckBox.GetValue())
+        self.ShortestDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
+        self.LateralDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
+
+    def OnClusterCheckBox(self, event):
+        self.ClusterDistSpinCtrl.Enable(self.ClusterCheckBox.GetValue())
+        self.ClusterDistLabel.Enable(self.ClusterCheckBox.GetValue())
+        self.ClusterDistUnitLabel.Enable(self.ClusterCheckBox.GetValue())
+
+    def OnMonteCarloCheckBox(self, event):
+        self.MonteCarloRunsLabel.Enable(self.MonteCarloCheckBox.GetValue())
+        self.MonteCarloRunsSpinCtrl.Enable(self.MonteCarloCheckBox.GetValue())
+        self.SimulationWindowChoice.Enable(self.MonteCarloCheckBox.GetValue())
+        self.SimulationWindowLabel.Enable(self.MonteCarloCheckBox.GetValue())
+
+    def OnSimulationWindowChoice(self, event):
+        pass
+
     def OnOtherSuffixCheckBox(self, event):
         self.OtherSuffixTextCtrl.Enable(self.OtherSuffixCheckBox.GetValue())
         
@@ -245,6 +268,16 @@ class Frame(gui.MainFrame):
         set_option('output_filename_date_suffix')
         set_option('spatial_resolution')
         set_option('shell_width')
+        set_option('determine_clusters')
+        set_option('within_cluster_dist')
+        set_option('run_monte_carlo')
+        set_option('monte_carlo_runs')
+        set_option('determine_interpoint_dists')
+        set_option('monte_carlo_simulation_window')
+        set_option('interpoint_dist_mode')
+        set_option('interpoint_shortest_dist')
+        set_option('interpoint_lateral_dist')
+        set_dict_option('interpoint_relations')
         set_dict_option('outputs')
         try:
             with open(self.configfn, 'w') as f:
@@ -324,11 +357,54 @@ class Frame(gui.MainFrame):
         check_bool_option('output_filename_date_suffix')
         check_int_option('spatial_resolution', lower=0, upper=1000)
         check_int_option('shell_width', lower=0, upper=1000)
+        check_bool_option('determine_clusters')
+        check_int_option('within_cluster_dist', lower=1, upper=1000)
+        check_bool_option('run_monte_carlo')
+        check_int_option('monte_carlo_runs', lower=1, upper=999)
+        check_bool_option('determine_interpoint_dists')
+        check_str_option('monte_carlo_simulation_window', ('shell', 'positive shell',
+                                                           'negative shell'))
+        check_str_option('interpoint_dist_mode', ('nearest neighbour', 'all'))
+        check_bool_option('interpoint_shortest_dist')
+        check_bool_option('interpoint_lateral_dist')
+        check_bool_dict_option('interpoint_relations')
         check_bool_dict_option('outputs')
     
     def set_options_in_ui(self):
         self.SpatResSpinCtrl.SetValue(self.opt.spatial_resolution)
         self.ShellWidthSpinCtrl.SetValue(self.opt.shell_width)
+        self.InterpointCheckBox.SetValue(self.opt.determine_interpoint_dists)
+        self.InterpointModeChoice.SetItems(['Nearest neighbour', 'All'])
+        self.InterpointModeChoice.SetStringSelection(
+            self.opt.interpoint_dist_mode)
+        self.InterpointRelationsCheckListBox.SetItems(sorted(
+            [key.capitalize() for key in self.opt.interpoint_relations]))
+        self.InterpointRelationsCheckListBox.SetCheckedStrings(
+            [key.capitalize() for key in self.opt.interpoint_relations
+                if self.opt.interpoint_relations[key] is True])
+        self.ShortestDistCheckBox.SetValue(self.opt.interpoint_shortest_dist)
+        self.LateralDistCheckBox.SetValue(self.opt.interpoint_lateral_dist)
+        self.InterpointModeChoice.Enable(self.InterpointCheckBox.GetValue())
+        self.InterpointModeLabel.Enable(self.InterpointCheckBox.GetValue())
+        self.InterpointRelationsCheckListBox.Enable(
+            self.InterpointCheckBox.GetValue())
+        self.InterpointRelationsLabel.Enable(self.InterpointCheckBox.GetValue())
+        self.ShortestDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
+        self.LateralDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
+        self.ClusterCheckBox.SetValue(self.opt.determine_clusters)
+        self.ClusterDistSpinCtrl.SetValue(self.opt.within_cluster_dist)
+        self.ClusterDistSpinCtrl.Enable(self.ClusterCheckBox.GetValue())
+        self.ClusterDistLabel.Enable(self.ClusterCheckBox.GetValue())
+        self.ClusterDistUnitLabel.Enable(self.ClusterCheckBox.GetValue())
+        self.MonteCarloCheckBox.SetValue(self.opt.run_monte_carlo)
+        self.MonteCarloRunsSpinCtrl.SetValue(self.opt.monte_carlo_runs)
+        self.SimulationWindowChoice.SetItems(['Shell', 'Positive shell', 'Negative shell'])
+        self.SimulationWindowChoice.SetStringSelection(
+            self.opt.monte_carlo_simulation_window)
+        self.MonteCarloRunsLabel.Enable(self.MonteCarloCheckBox.GetValue())
+        self.MonteCarloRunsSpinCtrl.Enable(self.MonteCarloCheckBox.GetValue())
+        self.SimulationWindowChoice.Enable(self.MonteCarloCheckBox.GetValue())
+        self.SimulationWindowLabel.Enable(self.MonteCarloCheckBox.GetValue())
         self.OutputCheckListBox.SetCheckedStrings([key.capitalize() for key in self.opt.outputs
                                                    if self.opt.outputs[key]])
         if self.opt.output_file_format == 'excel':
@@ -376,6 +452,25 @@ class Frame(gui.MainFrame):
             self.opt.output_filename_other_suffix = self.OtherSuffixTextCtrl.GetValue()
         self.opt.spatial_resolution = int(self.SpatResSpinCtrl.GetValue())
         self.opt.shell_width = int(self.ShellWidthSpinCtrl.GetValue())
+        self.opt.determine_interpoint_dists = self.InterpointCheckBox.GetValue()
+        for key in self.opt.interpoint_relations:
+            if (key.capitalize() in
+                    self.InterpointRelationsCheckListBox.GetCheckedStrings()):
+                self.opt.interpoint_relations[key] = True
+            else:
+                self.opt.interpoint_relations[key] = False
+        if True not in self.opt.interpoint_relations.values():
+            self.opt.determine_interpoint_dists = False
+        self.opt.interpoint_dist_mode = \
+            self.InterpointModeChoice.GetStringSelection().lower()
+        self.opt.interpoint_shortest_dist = self.ShortestDistCheckBox.GetValue()
+        self.opt.interpoint_lateral_dist = self.LateralDistCheckBox.GetValue()
+        self.opt.run_monte_carlo = self.MonteCarloCheckBox.GetValue()
+        self.opt.monte_carlo_runs = self.MonteCarloRunsSpinCtrl.GetValue()
+        self.opt.monte_carlo_simulation_window = \
+            self.SimulationWindowChoice.GetStringSelection().lower()
+        self.opt.determine_clusters = self.ClusterCheckBox.GetValue()
+        self.opt.within_cluster_dist = self.ClusterDistSpinCtrl.GetValue()
         self.get_output_dir()
 
     def get_input_dir(self):
@@ -581,7 +676,7 @@ class ViewFileDialog(gui.ViewFileDialog):
         gui.ViewFileDialog.__init__(self, parent)
         try:
             self.SetTitle(os.path.basename(fn))
-            f = open(fn, "r", 0)
+            f = open(fn, "r")
             try:
                 for s in f.readlines():
                     self.ViewFileTextCtrl.AppendText(s)
