@@ -8,6 +8,7 @@
 ###########################################################################
 
 import wx
+import wx.adv
 import wx.xrc
 
 wx.ID_ADDFILE = 1000
@@ -548,10 +549,10 @@ class AboutDialog ( wx.Dialog ):
 		TopSizer.Add( self.InitialSpaceSizer, 0, wx.ALL, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		TitleSizer = wx.FlexGridSizer( 1, 3, 0, 0 )
 		TitleSizer.AddGrowableCol( 2 )
@@ -575,13 +576,13 @@ class AboutDialog ( wx.Dialog ):
 		TopSizer.Add( TitleSizer, 1, wx.EXPAND|wx.RIGHT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.VersionLabel = wx.StaticText( self, wx.ID_ANY, u"VersionLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.VersionLabel.Wrap( -1 )
@@ -590,28 +591,28 @@ class AboutDialog ( wx.Dialog ):
 		TopSizer.Add( self.VersionLabel, 0, wx.ALIGN_BOTTOM|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.LastModLabel = wx.StaticText( self, wx.ID_ANY, u"LastModLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.LastModLabel.Wrap( -1 )
 		TopSizer.Add( self.LastModLabel, 0, wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.CopyrightLabel = wx.StaticText( self, wx.ID_ANY, u"CopyrightLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.CopyrightLabel.Wrap( -1 )
 		TopSizer.Add( self.CopyrightLabel, 0, wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.LicenseLabel = wx.StaticText( self, wx.ID_ANY, u"LicenseLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.LicenseLabel.Wrap( -1 )
 		TopSizer.Add( self.LicenseLabel, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		HyperLinksSizer = wx.FlexGridSizer( 2, 2, 0, 0 )
 		HyperLinksSizer.AddGrowableCol( 1 )
@@ -622,21 +623,21 @@ class AboutDialog ( wx.Dialog ):
 		self.EmailLabel.Wrap( -1 )
 		HyperLinksSizer.Add( self.EmailLabel, 0, wx.ALL, 5 )
 		
-		self.EmailHyperlink = wx.HyperlinkCtrl( self, wx.ID_ANY, u"EmailHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
+		self.EmailHyperlink = wx.adv.HyperlinkCtrl( self, wx.ID_ANY, u"EmailHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.adv.HL_DEFAULT_STYLE )
 		HyperLinksSizer.Add( self.EmailHyperlink, 0, wx.ALL, 5 )
 		
 		self.WebLabel = wx.StaticText( self, wx.ID_ANY, u"Web:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.WebLabel.Wrap( -1 )
 		HyperLinksSizer.Add( self.WebLabel, 0, wx.ALL, 5 )
 		
-		self.WebHyperlink = wx.HyperlinkCtrl( self, wx.ID_ANY, u"WebHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
+		self.WebHyperlink = wx.adv.HyperlinkCtrl( self, wx.ID_ANY, u"WebHyperlink", wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.adv.HL_DEFAULT_STYLE )
 		HyperLinksSizer.Add( self.WebHyperlink, 0, wx.ALL, 5 )
 		
 		
 		TopSizer.Add( HyperLinksSizer, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT, 5 )
 		
 		
-		TopSizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		TopSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
 		AboutSizer.Add( TopSizer, 1, wx.EXPAND, 5 )

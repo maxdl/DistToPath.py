@@ -210,9 +210,9 @@ class ProfileData:
         self.pp_distli, self.pp_latdistli = [], []
         self.rp_distli, self.rp_latdistli = [], []
         self.n_discarded = {'particle': 0, 'random': 0}
-        self.comment = ""
+        self.comment = ''
         self.pixelwidth = None
-        self.metric_unit = ""
+        self.metric_unit = ''
         self.posloc = geometry.Point()
         self.path = geometry.SegmentedPath()
         self.warnflag = False
@@ -257,17 +257,14 @@ class ProfileData:
             self.errflag = True
 
     def _determine_interdistlis(self):
-        if True not in [val for key, val in
-                        self.opt.interpoint_relations.items()
-                        if "simulated" not in key]:
+        if True not in [val for key, val in self.opt.interpoint_relations.items()
+                        if 'simulated' not in key]:
             return
-        if self.opt.interpoint_relations["particle - particle"]:
-            self.pp_distli, self.pp_latdistli = \
-                self._get_same_interpoint_distances(self.pli)
-        if self.opt.use_random and self.opt.interpoint_relations["random - "
-                                                                 "particle"]:
-            self.rp_distli, self.rp_latdistli = \
-                self._get_interpoint_distances2(self.randomli, self.pli)
+        if self.opt.interpoint_relations['particle - particle']:
+            self.pp_distli, self.pp_latdistli = self._get_same_interpoint_distances(self.pli)
+        if self.opt.use_random and self.opt.interpoint_relations['random - particle']:
+            self.rp_distli, self.rp_latdistli = self._get_interpoint_distances2(self.randomli, 
+                                                                                self.pli)
 
     def _get_same_interpoint_distances(self, pointli):
         dli = []
@@ -280,14 +277,12 @@ class ProfileData:
                     if self.opt.interpoint_shortest_dist:
                         dli.append(pointli[i].dist(pointli[j]))
                     if self.opt.interpoint_lateral_dist:
-                        latdli.append(pointli[i].lateral_dist_to_point(
-                            pointli[j], self.path))
+                        latdli.append(pointli[i].lateral_dist_to_point(pointli[j], self.path))
             elif self.opt.interpoint_dist_mode == 'nearest neighbour':
                 if self.opt.interpoint_shortest_dist:
                     dli.append(pointli[i].get_nearest_neighbour(pointli))
                 if self.opt.interpoint_lateral_dist:
-                    latdli.append(pointli[i].get_nearest_lateral_neighbour(
-                        pointli))
+                    latdli.append(pointli[i].get_nearest_lateral_neighbour(pointli))
         dli = [d for d in dli if d is not None]
         latdli = [d for d in latdli if d is not None]
         return dli, latdli
@@ -341,50 +336,47 @@ class ProfileData:
         else:
             return []
         box = self.path.bounding_box()
-        shell_width = geometry.to_pixel_units(self.opt.shell_width,
-                                              self.pixelwidth)
+        shell_width = geometry.to_pixel_units(self.opt.shell_width, self.pixelwidth)
         mcli = []
-        #dot_progress(reset=True)
+        # dot_progress(reset=True)
         for n in range(0, self.opt.monte_carlo_runs):
             if self.opt.stop_requested:
                 return []
-            #dot_progress()
-            mcli.append({"pli": [],
-                         "simulated - simulated": {"dist": [], "latdist": []},
-                         "simulated - particle": {"dist": [], "latdist": []},
-                         "particle - simulated": {"dist": [], "latdist": []},
-                         "clusterli": []})
+            # dot_progress()
+            mcli.append({'pli': [],
+                         'simulated - simulated': {'dist': [], 'latdist': []},
+                         'simulated - particle': {'dist': [], 'latdist': []},
+                         'particle - simulated': {'dist': [], 'latdist': []},
+                         'clusterli': []})
             for __ in range(0, numpoints):
                 while True:
-                    x = random.randint(int(box[0].x - shell_width),
-                                       int(box[1].x + shell_width) + 1)
-                    y = random.randint(int(box[0].y - shell_width),
-                                       int(box[2].y + shell_width) + 1)
+                    x = random.randint(int(box[0].x - shell_width), int(box[1].x + shell_width) + 1)
+                    y = random.randint(int(box[0].y - shell_width), int(box[2].y + shell_width) + 1)
                     p = Point(x, y, profile=self)
                     if is_valid(p):
                         break
                 # escape the while loop when a valid simulated point
                 # is found
-                mcli[n]["pli"].append(p)
-            for p in mcli[n]["pli"]:
+                mcli[n]['pli'].append(p)
+            for p in mcli[n]['pli']:
                 p.determine_stuff()
-            if self.opt.interpoint_relations["simulated - simulated"]:
-                distlis = self._get_same_interpoint_distances(mcli[n]["pli"])
-                mcli[n]["simulated - simulated"]["dist"].append(distlis[0])
-                mcli[n]["simulated - simulated"]["latdist"].append(distlis[1])
-            if self.opt.interpoint_relations["simulated - particle"]:
-                distlis = self._get_interpoint_distances2(mcli[n]["pli"], pli)
-                mcli[n]["simulated - particle"]["dist"].append(distlis[0])
-                mcli[n]["simulated - particle"]["latdist"].append(distlis[1])
-            if self.opt.interpoint_relations["particle - simulated"]:
-                distlis = self._get_interpoint_distances2(pli, mcli[n]["pli"])
-                mcli[n]["particle - simulated"]["dist"].append(distlis[0])
-                mcli[n]["particle - simulated"]["latdist"].append(distlis[1])
+            if self.opt.interpoint_relations['simulated - simulated']:
+                distlis = self._get_same_interpoint_distances(mcli[n]['pli'])
+                mcli[n]['simulated - simulated']['dist'].append(distlis[0])
+                mcli[n]['simulated - simulated']['latdist'].append(distlis[1])
+            if self.opt.interpoint_relations['simulated - particle']:
+                distlis = self._get_interpoint_distances2(mcli[n]['pli'], pli)
+                mcli[n]['simulated - particle']['dist'].append(distlis[0])
+                mcli[n]['simulated - particle']['latdist'].append(distlis[1])
+            if self.opt.interpoint_relations['particle - simulated']:
+                distlis = self._get_interpoint_distances2(pli, mcli[n]['pli'])
+                mcli[n]['particle - simulated']['dist'].append(distlis[0])
+                mcli[n]['particle - simulated']['latdist'].append(distlis[1])
         if self.opt.determine_clusters:
             #dot_progress(reset=True)
             for n, li in enumerate(mcli):
                 #dot_progress()
-                mcli[n]["clusterli"] = self._determine_clusters(li["pli"])
+                mcli[n]['clusterli'] = self._determine_clusters(li['pli'])
         self.mcli = mcli
         sys.stdout.write("\n")
 
@@ -444,43 +436,45 @@ class ProfileData:
         if not li:
             raise ProfileError(self, "Could not open input file")
         while li:
-            s = li.pop(0).replace("\n", "").strip()
-            if s.split(" ")[0].upper() == "IMAGE":
-                self.src_img = s.split(" ")[1]
-            elif s.split(" ")[0].upper() == "PROFILE_ID":
+            s = li.pop(0).replace('\n', '').strip()
+            if s.split(' ')[0].upper() == 'IMAGE':
+                self.src_img = s.split(' ')[1]
+            elif s.split(' ')[0].upper() == 'PROFILE_ID':
                 try:
-                    self.id = int(s.split(" ")[1])
+                    self.id = int(s.split(' ')[1])
                 except (IndexError, ValueError):
                     profile_warning(self, "Profile id not defined or invalid")
-            elif s.split(" ")[0].upper() == "COMMENT":
+            elif s.split(' ')[0].upper() == 'COMMENT':
                 try:
-                    self.comment = s.split(" ", 1)[1]
+                    self.comment = s.split(' ', 1)[1]
                 except IndexError:
                     self.comment = ''
-            elif s.split(" ")[0].upper() == "PIXELWIDTH":
+            elif s.split(' ')[0].upper() == 'PIXELWIDTH':
                 try: 
-                    self.pixelwidth = float(s.split(" ")[1])
-                    self.metric_unit = s.split(" ")[2]
+                    self.pixelwidth = float(s.split(' ')[1])
+                    self.metric_unit = s.split(' ')[2]
                 except (IndexError, ValueError):
                     raise ProfileError(self, "PIXELWIDTH is not a valid number")
-            elif s.split(" ")[0].upper() == "POSLOC":
+            elif s.split(' ')[0].upper() == 'POSLOC':
                 try:
-                    x, y = s.split(" ", 1)[1].split(", ")
+                    x, y = s.split(' ', 1)[1].split(', ')
                     self.posloc = geometry.Point(float(x), float(y))
                 except (IndexError, ValueError):
                     raise ProfileError(self, "POSLOC not valid")
-            elif s.upper() == "PATH":
-                self.path = geometry.SegmentedPath(self.__get_coords(li, "path"))
-            elif s.upper() == "HOLE":
-                self.holeli.append(geometry.SegmentedPath(self.__get_coords(li, "hole")))
-            elif s.upper() in ("POINTS", "PARTICLES"):
-                self.pli = PointList(self.__get_coords(li, "particle"), "particle", self)
-            elif s.upper() == "GRID":
-                __ = PointList(self.__get_coords(li, "grid"), "grid", self)
-                profile_warning(self, "Grid found; however, grids are no longer supported")
-            elif s.upper() == "RANDOM_POINTS":
-                self.randomli = PointList(self.__get_coords(li, "random"), "random", self)
-            elif s[0] != "#":          # unless specifically commented out           
+            elif s.upper() == 'PATH':
+                self.path = geometry.SegmentedPath(self.__get_coords(li, 'path'))
+            elif s.upper() == 'HOLE':
+                self.holeli.append(geometry.SegmentedPath(self.__get_coords(li, 'hole')))
+            elif s.upper() in ('POINTS', 'PARTICLES'):
+                self.pli = PointList(self.__get_coords(li, 'particle'), 'particle', self)
+            elif s.upper() == 'RANDOM_POINTS':
+                self.randomli = PointList(self.__get_coords(li, 'random'), 'random', self)
+            elif s.upper() == 'GRID':
+                # Retrieve coordinates to dummy variable as they will not be used
+                __ = PointList(self.__get_coords(li, 'grid'), 'grid', self)
+                profile_warning(self, "Grid found; however, as grids are no longer supported " 
+                                      "it will be discarded")
+            elif s[0] != '#':          # unless specifically commented out           
                 profile_warning(self, "Unrecognized string '%s' in input file" % s)
         # Now, let's see if everything was found
         self.__check_parsed_data()
@@ -490,10 +484,10 @@ class ProfileData:
             parsed data to standard output.            
         """
         if self.src_img is None:
-            self.src_img = "N/A"
+            self.src_img = 'N/A'
         sys.stdout.write("  Source image: %s\n" % self.src_img)
         if self.id is None:
-            self.id = "N/A"
+            self.id = 'N/A'
         sys.stdout.write("  Profile id: %s\n" % self.id)
         sys.stdout.write("  Comment: %s\n" % self.comment)
         try:
@@ -559,24 +553,21 @@ class ProfileData:
             a warning is issued.
         """
         pointli = []
-        s = strli.pop(0).replace("\n", "").replace(" ", "").strip()
-        while s != "END":
+        s = strli.pop(0).replace('\n', '').replace(' ', '').strip()
+        while s != 'END':
             try:
-                p = geometry.Point(float(s.split(",")[0]), 
-                                   float(s.split(",")[1]))
-                if pointli and (p == pointli[-1] or 
-                                (coord_type == 'particle' and p in pointli)):
+                p = geometry.Point(float(s.split(',')[0]), float(s.split(',')[1]))
+                if pointli and (p == pointli[-1] or (coord_type == 'particle' and p in pointli)):
                     sys.stdout.write("Duplicate %s coordinates %s: skipping "
                                      "2nd instance\n" % (coord_type, p))
                 else:
                     pointli.append(Point(p.x, p.y, ptype=coord_type))
             except ValueError:
-                if s[0] != "#":
-                    profile_warning(self, "'%s' not valid %s coordinates"
-                                    % (s, coord_type))
+                if s[0] != '#':
+                    profile_warning(self, "'%s' not valid %s coordinates" % (s, coord_type))
                 else:
                     pass 
-            s = strli.pop(0).replace("\n", "").strip()
+            s = strli.pop(0).replace('\n', '').strip()
         # For some reason, sometimes the endnodes have the same coordinates;
         # in that case, delete the last endnode to avoid division by zero
         if (len(pointli) > 1) and (pointli[0] == pointli[-1]): 
@@ -604,24 +595,23 @@ class ProfileData:
         path_shortened = [self.path[n] for n in range(1, len(self.path) - 2)]
         c = l.center_point()
         cdist = Point(c.x, c.y).perpend_dist(self.path, posloc=self.posloc)
-        xnum = self.path[0].segment_crossing_number(path_shortened,
-                                                    self.path[-1])
+        xnum = self.path[0].segment_crossing_number(path_shortened, self.path[-1])
         if xnum == 0:
             if cdist < 0: 
-                return "concave"
+                return 'concave'
             elif cdist > 0:
                 if self.posloc: 
-                    return "convex"
+                    return 'convex'
                 else:
-                    return "u-like"
+                    return 'u-like'
             else:  # don't know about this... if collinear, what is xnum? 
-                return "flat"
+                return 'flat'
         elif l.length() / self.path.length() > flat_threshold:
-            return "flat"
+            return 'flat'
         elif xnum % 2 == 0: 
-            return "w-like"
+            return 'w-like'
         else: 
-            return "s-like"
+            return 's-like'
 
     def curvature_centroid(self):
         """ Return a measure of path curvature based on the centroid of the
@@ -633,11 +623,10 @@ class ProfileData:
             negative (path is "concave"). Curvature is not defined for paths
             with "flat", "w-like" or "s-like" shapes.
         """
-        if self.shape() in ("flat", "w-like", "s-like"):
+        if self.shape() in ('flat', 'w-like', 's-like'):
             return None
         c = self.path.centroid()
-        return (1000 * Point(c.x, c.y).perpend_dist(self.path,
-                                                    posloc=self.posloc) /
+        return (1000 * Point(c.x, c.y).perpend_dist(self.path, posloc=self.posloc) /
                 self.path.area())
 
     def curvature_dev_from_straight(self):
@@ -658,14 +647,16 @@ class OptionData:
         self.input_file_list = []
         self.spatial_resolution = 25
         self.shell_width = 200
-        self.outputs = {'profile summary': True, 'particle summary': True,
-                        'random summary': True, 'session summary': True}
+        self.outputs = {'profile summary': True,
+                        'particle summary': True,
+                        'random summary': True,
+                        'session summary': True}
         self.gridSummary = True
         self.interparticleSummary = False
         self.individualProfileOutput = False
-        self.output_file_format = "excel"
-        self.output_filename_ext = ".xlsx"
-        self.input_filename_ext = ".dtp"
+        self.output_file_format = 'excel'
+        self.output_filename_ext = '.xlsx'
+        self.input_filename_ext = '.dtp'
         self.output_filename_suffix = ''
         self.output_filename_other_suffix = ''
         self.output_filename_date_suffix = True

@@ -330,11 +330,8 @@ class Point(object):
         # (posloc). Even (odd) number => the particle and negloc
         # (posloc) are on the same side of the path; odd number =>
         # different side.
-        if (negloc is not None and
-                self.segment_crossing_number(m, negloc) % 2 == 0):
-            mindist = -mindist
-        elif (posloc is not None and
-              self.segment_crossing_number(m, posloc) % 2 != 0):
+        if ((negloc and self.segment_crossing_number(m, negloc) % 2 == 0) or
+                (posloc and self.segment_crossing_number(m, posloc) % 2 != 0)):
             mindist = -mindist
         return mindist
 

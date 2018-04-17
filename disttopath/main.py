@@ -93,12 +93,12 @@ def save_output(profileli, opt):
                           pro.comment] for pro in eval_proli])
                       
     def write_point_summary(ptype):
-        if ptype == "particle" and opt.outputs['particle summary']:
-            pli = "pli"
-            pstr = "particle"
-        elif ptype == "random" and opt.outputs['random summary'] and opt.use_random:
-            pli = "randomli"
-            pstr = "point"
+        if ptype == 'particle' and opt.outputs['particle summary']:
+            pli = 'pli'
+            pstr = 'particle'
+        elif ptype == 'random' and opt.outputs['random summary'] and opt.use_random:
+            pli = 'randomli'
+            pstr = 'point'
         else:
             return
         with file_io.FileWriter("%s.summary" % ptype, opt) as f:
@@ -148,10 +148,10 @@ def save_output(profileli, opt):
             return
         ip_rels = dict([(key, val)
                         for key, val in opt.interpoint_relations.items()
-                        if val and "simulated" not in key])
+                        if val and 'simulated' not in key])
         if not opt.use_random:
             for key, val in opt.interpoint_relations.items():
-                if "random" in key and val:
+                if 'random' in key and val:
                     del ip_rels[key]
         if (len(ip_rels) == 0 or not
                 (opt.interpoint_shortest_dist or opt.interpoint_lateral_dist)):
@@ -165,7 +165,7 @@ def save_output(profileli, opt):
         headerli = list(ip_rels.keys())
         prefixli = []
         for key, val in ip_rels.items():
-            prefix = key[0] + key[key.index("- ") + 2] + "_"
+            prefix = key[0] + key[key.index('- ') + 2] + '_'
             prefixli.append(prefix)
         if opt.interpoint_shortest_dist and opt.interpoint_lateral_dist:
             headerli.extend(headerli)
@@ -180,8 +180,7 @@ def save_output(profileli, opt):
         table.extend([topheaderli, headerli])
         cols = [[] for _ in prefixli]
         for pro in eval_proli:
-            for n, li in enumerate([pro.__dict__[prefix + "distli"]
-                                    for prefix in prefixli]):
+            for n, li in enumerate([pro.__dict__[prefix + 'distli'] for prefix in prefixli]):
                 cols[n].extend([m(e, pro.pixelwidth) for e in li])
         # transpose cols and append to table
         table.extend(map(lambda *col: [e if e is not None else "" for e in col], *cols))
@@ -198,10 +197,9 @@ def save_output(profileli, opt):
         table = [["Run %d" % (n + 1)
                   for n in range(0, opt.monte_carlo_runs)]]
         for pro in eval_proli:
-            table.extend(map(m_li, *[[p.dist_to_path for p in li["pli"]]
+            table.extend(map(m_li, *[[p.dist_to_path for p in li['pli']]
                                      for li in pro.mcli]))
-        with file_io.FileWriter(
-                "simulated.path.distances", opt) as f:
+        with file_io.FileWriter("simulated.path.distances", opt) as f:
             f.writerows(table)
 
     def write_mc_ip_dists(dist_type):
@@ -212,15 +210,14 @@ def save_output(profileli, opt):
         if not opt.run_monte_carlo:
             return
         for ip_type in [key for key, val in opt.interpoint_relations.items()
-                        if "simulated" in key and val]:
-            if ((dist_type == "shortest" and not opt.interpoint_shortest_dist)
-                or
-                    (dist_type == "lateral" and not opt.interpoint_lateral_dist)):
+                        if 'simulated' in key and val]:
+            if ((dist_type == 'shortest' and not opt.interpoint_shortest_dist) or
+                    (dist_type == 'lateral' and not opt.interpoint_lateral_dist)):
                 return
-            if dist_type == "lateral":
-                short_dist_type = "lat"
+            if dist_type == 'lateral':
+                short_dist_type = 'lat'
             else:
-                short_dist_type = ""
+                short_dist_type = ''
             table = [["Run %d" % (n + 1)
                       for n in range(0, opt.monte_carlo_runs)]]
             for pro in eval_proli:
@@ -229,8 +226,7 @@ def save_output(profileli, opt):
                                    for p in li[ip_type]
                                    ["%sdist" % short_dist_type]]))
             with file_io.FileWriter("%s.interpoint.%s.distance.summary"
-                                            % (ip_type.replace(" ", ""),
-                                               dist_type), opt) as f:
+                                    % (ip_type.replace(" ", ""), dist_type), opt) as f:
                 f.writerows(table)
 
     def write_mc_cluster_summary():
@@ -245,7 +241,7 @@ def save_output(profileli, opt):
                   "Comment"]]
         for pro in eval_proli:
             for n in range(0, opt.monte_carlo_runs):
-                for c in pro.mcli[n]["clusterli"]:
+                for c in pro.mcli[n]['clusterli']:
                     table.append([len(c), n + 1,
                                   m(c.dist_to_path, pro.pixelwidth),
                                   m(na(c.dist_to_nearest_cluster),
@@ -271,8 +267,8 @@ def save_output(profileli, opt):
     write_interpoint_summaries()
     write_cluster_summary()
     write_mc_dist_to_path()
-    write_mc_ip_dists("shortest")
-    write_mc_ip_dists("lateral")
+    write_mc_ip_dists('shortest')
+    write_mc_ip_dists('lateral')
     write_mc_cluster_summary()
 
 
@@ -317,9 +313,9 @@ def get_output_format(opt):
             import openpyxl
         except ImportError:
             sys.stdout.write("Unable to write Excel files: resorting to csv format.\n")
-            opt.output_file_format = "csv"
+            opt.output_file_format = 'csv'
     if opt.output_file_format == 'csv':
-        opt.output_filename_ext = ".csv"
+        opt.output_filename_ext = '.csv'
         opt.csv_format = {'dialect': 'excel', 'lineterminator': '\n'}
         if opt.csv_delimiter == 'tab':
             opt.csv_format['delimiter'] = '\t'
@@ -343,8 +339,8 @@ def main_proc(parent):
     # Remove duplicate filenames
     for f in opt.input_file_list:
         if opt.input_file_list.count(f) > 1:
-            sys.stdout.write("Duplicate input filename %s:\n   => "
-                             "removing first occurrence in list\n" % f)
+            sys.stdout.write("Duplicate input filename %s:\n   => removing first occurrence in "
+                             "list\n" % f)
             opt.input_file_list.remove(f)
     get_output_format(opt)
     reset_options(opt)
@@ -356,7 +352,7 @@ def main_proc(parent):
         else: 
             sys.stdout.write("\nNo more input files...\n")
             break
-        parent.process_queue.put(("new_file", inputfn))
+        parent.process_queue.put(('new_file', inputfn))
         profileli.append(ProfileData(inputfn, opt))
         profileli[-1].process(opt)
         if opt.stop_requested:
@@ -366,8 +362,7 @@ def main_proc(parent):
         if not profileli[-1].errflag:
             n += 1
             if profileli[-1].warnflag:
-                sys.stdout.write("Warning(s) found while processing "
-                                 "input file.\n")
+                sys.stdout.write("Warning(s) found while processing input file.\n")
                 continue
         else:
             sys.stdout.write("Error(s) found while processing input file =>\n"
