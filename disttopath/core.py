@@ -228,7 +228,7 @@ class ProfileData:
 
         try:
             self.__parse()
-            self.__check_path()
+            self.__check_paths()
             sys.stdout.write("Determining distances etc...\n")
             compute_stuff(self.pli)
             self.pli = [p for p in self.pli if not p.discard]
@@ -242,13 +242,13 @@ class ProfileData:
                                  % (ptypestr, self.n_discarded[ptype]))
             if self.opt.determine_interpoint_dists:
                 sys.stdout.write("Determining interpoint distances...\n")
-                self._determine_interdistlis()
+                self.__determine_interdistlis()
             if self.opt.determine_clusters:
                 sys.stdout.write("Determining clusters...\n")
-                self.clusterli = self._determine_clusters(self.pli)
+                self.clusterli = self.__determine_clusters(self.pli)
             if self.opt.run_monte_carlo:
                 sys.stdout.write("Running Monte Carlo simulations...\n")
-                self._run_monte_carlo()
+                self.__run_monte_carlo()
             if opt.stop_requested:
                 return
             sys.stdout.write("Done.\n")
@@ -256,17 +256,17 @@ class ProfileData:
             sys.stdout.write("Error: %s\n" % err.msg)
             self.errflag = True
 
-    def _determine_interdistlis(self):
+    def __determine_interdistlis(self):
         if True not in [val for key, val in self.opt.interpoint_relations.items()
                         if 'simulated' not in key]:
             return
         if self.opt.interpoint_relations['particle - particle']:
-            self.pp_distli, self.pp_latdistli = self._get_same_interpoint_distances(self.pli)
+            self.pp_distli, self.pp_latdistli = self.__get_same_interpoint_distances(self.pli)
         if self.opt.use_random and self.opt.interpoint_relations['random - particle']:
-            self.rp_distli, self.rp_latdistli = self._get_interpoint_distances2(self.randomli, 
-                                                                                self.pli)
+            self.rp_distli, self.rp_latdistli = self.__get_interpoint_distances2(self.randomli,
+                                                                                 self.pli)
 
-    def _get_same_interpoint_distances(self, pointli):
+    def __get_same_interpoint_distances(self, pointli):
         dli = []
         latdli = []
         for i in range(0, len(pointli)):
@@ -287,7 +287,7 @@ class ProfileData:
         latdli = [d for d in latdli if d is not None]
         return dli, latdli
 
-    def _get_interpoint_distances2(self, pointli, pointli2=None):
+    def __get_interpoint_distances2(self, pointli, pointli2=None):
         if pointli2 is None:
             pointli2 = []
         dli = []
@@ -310,7 +310,7 @@ class ProfileData:
         latdli = [d for d in latdli if d is not None]
         return dli, latdli
 
-    def _run_monte_carlo(self):
+    def __run_monte_carlo(self):
 
         def is_valid(rand_p):
             d = rand_p.dist_to_path
@@ -361,26 +361,26 @@ class ProfileData:
             for p in mcli[n]['pli']:
                 p.determine_stuff()
             if self.opt.interpoint_relations['simulated - simulated']:
-                distlis = self._get_same_interpoint_distances(mcli[n]['pli'])
+                distlis = self.__get_same_interpoint_distances(mcli[n]['pli'])
                 mcli[n]['simulated - simulated']['dist'].append(distlis[0])
                 mcli[n]['simulated - simulated']['latdist'].append(distlis[1])
             if self.opt.interpoint_relations['simulated - particle']:
-                distlis = self._get_interpoint_distances2(mcli[n]['pli'], pli)
+                distlis = self.__get_interpoint_distances2(mcli[n]['pli'], pli)
                 mcli[n]['simulated - particle']['dist'].append(distlis[0])
                 mcli[n]['simulated - particle']['latdist'].append(distlis[1])
             if self.opt.interpoint_relations['particle - simulated']:
-                distlis = self._get_interpoint_distances2(pli, mcli[n]['pli'])
+                distlis = self.__get_interpoint_distances2(pli, mcli[n]['pli'])
                 mcli[n]['particle - simulated']['dist'].append(distlis[0])
                 mcli[n]['particle - simulated']['latdist'].append(distlis[1])
         if self.opt.determine_clusters:
-            #dot_progress(reset=True)
+            dot_progress(reset=True)
             for n, li in enumerate(mcli):
-                #dot_progress()
-                mcli[n]['clusterli'] = self._determine_clusters(li['pli'])
+                dot_progress()
+                mcli[n]['clusterli'] = self.__determine_clusters(li['pli'])
         self.mcli = mcli
         sys.stdout.write("\n")
 
-    def _process_clusters(self, clusterli):
+    def __process_clusters(self, clusterli):
         for c in clusterli:
             if self.opt.stop_requested:
                 return
@@ -401,7 +401,7 @@ class ProfileData:
                         c.dist_to_nearest_cluster = d
                         c.nearest_cluster = c2
 
-    def _determine_clusters(self, pointli):
+    def __determine_clusters(self, pointli):
         """ Partition pointli into clusters; each cluster contains all points
             that are less than opt.within_cluster_dist from at least one
             other point in the cluster
@@ -425,7 +425,7 @@ class ProfileData:
             else:
                 p1.cluster = len(clusterli)
                 clusterli.append(ClusterData([p1]))
-        self._process_clusters(clusterli)
+        self.__process_clusters(clusterli)
         return clusterli
 
     def __parse(self):
@@ -480,51 +480,150 @@ class ProfileData:
         self.__check_parsed_data()
 
     def __check_parsed_data(self):
-        """ See if the synapse data was parsed correctly, and print info on the
-            parsed data to standard output.            
+        """See if the profile data was parsed correctly, and print info
+        on the parsed data to stdout.
         """
-        if self.src_img is None:
-            self.src_img = 'N/A'
-        sys.stdout.write("  Source image: %s\n" % self.src_img)
-        if self.id is None:
-            self.id = 'N/A'
-        sys.stdout.write("  Profile id: %s\n" % self.id)
-        sys.stdout.write("  Comment: %s\n" % self.comment)
-        try:
-            sys.stdout.write("  Pixel width: %.2f " % float(self.pixelwidth))
-        except AttributeError:
-            raise ProfileError(self, "No valid pixel width found in input file")
-        try:
-            sys.stdout.write("%s\n" % self.metric_unit)
-        except AttributeError:
-            raise ProfileError(self, "Metric unit not found in input file")
-        if self.posloc:
-            if not hasattr(self.opt, "use_polarity") or self.opt.use_polarity:
-                sys.stdout.write("  Polarity: defined.\n")
-                self.opt.use_polarity = True
-            elif hasattr(self.opt, "use_polarity") and not self.opt.use_polarity:
-                raise ProfileError(self, "Polarity defined but not expected")
+        self.__check_var_default('src_img', "Source image", "N/A")
+        self.__check_var_default('id', "Profile ID", "N/A")
+        self.__check_var_default('comment', "Comment", "")
+        self.__check_var_val('metric_unit', "Metric unit", 'metric_unit')
+        self.__check_required_var('pixelwidth', "Pixel width", self.metric_unit)
+        self.__check_var_exists('posloc', "Polarity", 'use_polarity')
+        self.__check_list_var('path', 'Path', 'nodes', 2)
+        self.__check_list_var('pli', 'Points', '', 0)
+        self.__check_table_var('holeli', "Hole", "Holes", 0, 2)
+        self.__check_var_exists('randomli', "Random points", 'use_random')
+
+    def __check_required_var(self, var_to_check, var_str, post_str):
+        """Confirm that self has a required variable; else, raise
+        ProfileError.
+        """
+        if not self.__dict__[var_to_check]:
+            raise ProfileError(self, "%s not found in input file" % var_str)
         else:
-            if hasattr(self.opt, "use_polarity") and self.opt.use_polarity:
-                raise ProfileError(self, "Polarity expected but not defined")
-            sys.stdout.write("  Polarity: not defined.\n")
-            self.opt.use_polarity = False
-        if not self.path:
-            raise ProfileError(self, "No path coordinates found in input file")
+            sys.stdout.write("  %s: %s %s\n" % (var_str, self.__dict__[var_to_check], post_str))
+
+    @staticmethod
+    def __check_list_len(var, min_len):
+        """Return True if var is a list and has at least min_len
+        elements, else False.
+        """
+        return isinstance(var, list) and len(var) >= min_len
+
+    def __check_list_var(self, var_to_check, var_str, post_str, min_len):
+        """Confirms that self has a var_to_check that is a list and
+        has at least min_len elements; if var_to_check does not exist
+        and min_len <= 0, assigns an empty list to var_to_check. Else,
+        raise a ProfileError.
+        """
+        if not self.__dict__[var_to_check]:
+            if min_len > 0:
+                raise ProfileError(self, "%s not found in input file" % var_str)
+            else:
+                self.__dict__[var_to_check] = []
+        elif not self.__check_list_len(self.__dict__[var_to_check], min_len):
+            raise ProfileError(self, "%s has too few coordinates" % var_str)
+        if post_str != '':
+            post_str = " " + post_str
+        sys.stdout.write("  %s%s: %d\n" % (var_str, post_str, len(self.__dict__[var_to_check])))
+
+    def __check_table_var(self, var_to_check, var_str_singular,
+                          var_str_plural, min_len_1, min_len_2):
+        """Confirms that var_to_check exists, is a list and has at
+        least min_len_1 elements, and that each of these has at least
+        min_len_2 subelements; if var_to_check does not exist and
+        min_len_1 <= 0, assigns an empty list to var_to_check. Else,
+        raise ProfileError.
+        """
+        if not self.__dict__[var_to_check]:
+            if min_len_1 > 0:
+                raise ProfileError(self, "%s not found in input file" % var_str_plural)
+            else:
+                self.__dict__[var_to_check] = []
+        elif not self.__check_list_len(self.__dict__[var_to_check], min_len_1):
+            raise ProfileError(self, "Too few %s found in input file" % var_str_plural.lower())
         else:
-            sys.stdout.write("  Path nodes: %d\n" % len(self.path))
-        sys.stdout.write("  Holes: %d\n" % len(self.holeli))
-        sys.stdout.write("  Particles: %d\n" % len(self.pli))
-        if self.randomli:
-            if not hasattr(self.opt, "use_random") or self.opt.use_random:
-                sys.stdout.write("  Random points specified.\n")
-                self.opt.use_random = True
-            elif hasattr(self.opt, "use_random") and not self.opt.use_random:
-                raise ProfileError(self, "Random points found but not expected")
+            for element in self.__dict__[var_to_check]:
+                if not self.__check_list_len(element, min_len_2):
+                    raise ProfileError(self, "%s has too few coordinates" % var_str_singular)
+        sys.stdout.write("  %s: %d\n" % (var_str_plural, len(self.__dict__[var_to_check])))
+
+    def __check_var_default(self, var_to_check, var_str, default=""):
+        """Checks if var_to_check exists; if not, assign the default
+        value to var_to_check. Never raises a ProfileError.
+        """
+        if not self.__dict__[var_to_check]:
+            self.__dict__[var_to_check] = default
+        sys.stdout.write("  %s: %s\n" % (var_str, self.__dict__[var_to_check]))
+
+    def __check_var_exists(self, var_to_check, var_str, optflag):
+        """Checks for consistency between profiles with respect to the
+        existence of var_to_check (i.e., var_to_check must be present
+        either in all profiles or in none).
+
+        If optflag is not set (i.e., this is the first profile), then
+        set optflag to True or False depending on the existence of
+        var_to_check. If optflag is already set (for consequent
+        profiles), var_to_check must (if optflag is True) or must not
+        (if optflag is False) exist. If not so, raise ProfileError.
+        """
+        if not hasattr(self.opt, optflag):
+            if self.__dict__[var_to_check]:
+                self.opt.__dict__[optflag] = True
+            else:
+                self.opt.__dict__[optflag] = False
+        if self.opt.__dict__[optflag]:
+            if self.__dict__[var_to_check]:
+                sys.stdout.write("  %s: yes\n" % var_str)
+            else:
+                raise ProfileError(self, "%s expected but not found in input file" % var_str)
+        elif self.__dict__[var_to_check]:
+            raise ProfileError(self, "%s found but not expected" % var_str)
         else:
-            if hasattr(self.opt, "use_random") and self.opt.use_random:
-                raise ProfileError(self, "Random points expected but not found")
-            self.opt.use_random = False
+            sys.stdout.write("  %s: no\n" % var_str)
+
+    def __check_var_val(self, var_to_check, var_str, optvar):
+        """Checks for consistency between profiles with respect to the
+        value of var_to_check (i.e., var_to_check must be present and
+        have equal value in all profiles).
+
+        If optvar is not set (i.e., this is the first profile), then
+        set optflag to the value of var_to_check. If optvar is already
+        set (for consequent profiles), the value of var_to_check must
+        be equal to that of optvar. If not so, raise ProfileError.
+        """
+        if not self.__dict__[var_to_check]:
+            raise ProfileError(self, "%s not found in input file" % var_str)
+        if not hasattr(self.opt, optvar):
+            self.opt.__dict__[optvar] = self.__dict__[var_to_check]
+        elif self.__dict__[var_to_check] == self.opt.__dict__[optvar]:
+            pass  # really no point in pointing out that it's ok
+            # sys.stdout.write("  %s: %s\n"
+            #                  % (var_str, parent.__dict__[var_to_check]))
+        else:
+            raise ProfileError(self, "%s value '%s'  differs from the value "
+                                     "specified ('%s') in the first input file"
+                               % (var_str, self.__dict__[var_to_check],
+                                  self.opt.__dict__[optvar]))
+
+    def __check_paths(self):
+        """Check if profile border and holes intersect with themselves."""
+
+        def check_path(_path, s):
+            for p in range(0, len(_path) - 3):
+                for q in range(0, len(_path) - 1):
+                    if p not in (q, q + 1) and p + 1 not in (q, q + 1):
+                        if geometry.segment_intersection(_path[p],
+                                                         _path[p + 1],
+                                                         _path[q],
+                                                         _path[q + 1]):
+                            raise ProfileError(
+                                self, "%s invalid (crosses itself)" % s)
+            return True
+
+        check_path(self.path, "Path")
+        for path in self.holeli:
+            check_path(path, "Hole")
         for n, h in enumerate(self.holeli):
             if not h.is_simple_polygon():
                 raise ProfileError(self, "Profile hole %d is not a simple polygon" % (n + 1))
@@ -532,20 +631,7 @@ class ProfileData:
                 if h.overlaps_polygon(h2):
                     raise ProfileError(self, "Profile hole %d overlaps with hole %d "
                                        % (n + 1, n + n2 + 2))
-                         
-    def __check_path(self):
-        """ Make sure that path does not intersect with itself
-        """        
-        for n1 in range(0, len(self.path) - 3):
-            for n2 in range(0, len(self.path) - 1):
-                if n1 not in (n2, n2 + 1) and n1 + 1 not in (n2, n2 + 1):
-                    if geometry.segment_intersection(self.path[n1],
-                                                     self.path[n1 + 1],
-                                                     self.path[n2],
-                                                     self.path[n2 + 1]):
-                        raise ProfileError(self, "Path invalid (crossing "
-                                                 "vertices)")
-        sys.stdout.write("  Path contains no crossing vertices.\n")
+        sys.stdout.write("  Paths are ok.\n")
  
     def __get_coords(self, strli, coord_type=""):
         """ Pop point coordinates from list strli.
@@ -681,6 +767,13 @@ class OptionData:
                                      'simulated - simulated': False}
         self.interpoint_shortest_dist = True
         self.interpoint_lateral_dist = False
+
+    def reset(self):
+        """ Resets all options to default, and removes those that are not
+            set in __init__().
+        """
+        self.__dict__ = {}
+        self.__init__()
 # end of class OptionData
 
 

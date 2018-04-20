@@ -1,6 +1,6 @@
+import functools
 import math
 import sys
-import types
 
 
 class Point(object):
@@ -715,7 +715,7 @@ def segments_intersect_or_coincide(a, b, c, d):
     return False
 
 
-def convex_hull(pointli):
+def convex_hull_graham(pointli):
     """Determine the convex hull of the points in pointli.
 
     Uses Graham's algorithm after O'Rourke (1998).
@@ -769,7 +769,7 @@ def convex_hull(pointli):
     # sort points with respect to angle between the vector p0->p and the x axis
     for p in pointli:
         p.delete = False
-    sortedli = sorted([p for p in pointli if p != p0], comp_func)
+    sortedli = sorted([p for p in pointli if p != p0], key=functools.cmp_to_key(comp_func))
     # delete points marked for deletion (i.e., non-extreme points on the hull)
     for p in sortedli[:]:  # iterate over a copy of sortedli because we
         if p.delete:  # will delete marked points in sortedli
@@ -815,3 +815,23 @@ def convex_hull_andrew(pointli):
     return upper, lower
 
 
+def convex_hull_andrew_merged(pointli):
+    """Determine the convex hull of the points in pointli.
+
+    Merges the upper and lower hulls yielded by convex_hull_andrew(),
+    and returns the resulting SegmentedPath.
+    """
+    upper, lower = convex_hull_andrew(pointli)
+    lower.reverse()
+    merged = SegmentedPath(upper + lower[1:-1])
+    return merged
+
+
+def convex_hull(pointli):
+    """Determine the convex hull of the points in pointli.
+
+    Uses Andrew's algorithm.
+    
+    Returns a SegmentedPath.
+    """
+    return convex_hull_andrew_merged(pointli)

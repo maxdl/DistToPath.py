@@ -207,7 +207,7 @@ def save_output(profileli, opt):
         def m_li(*_li):
             return [m(x, pro.pixelwidth) for x in _li]
 
-        if not opt.run_monte_carlo:
+        if not (opt.run_monte_carlo and opt.determine_interpoint_dists):
             return
         for ip_type in [key for key, val in opt.interpoint_relations.items()
                         if 'simulated' in key and val]:
@@ -270,7 +270,12 @@ def save_output(profileli, opt):
     write_mc_ip_dists('shortest')
     write_mc_ip_dists('lateral')
     write_mc_cluster_summary()
-
+    if opt.save_result['any_err']:
+        sys.stdout.write("Note: One or more summaries could not be saved.\n")
+    if opt.save_result['any_saved']:
+        sys.stdout.write("Done.\n")
+    else:
+        sys.stdout.write("No summaries saved.\n")
 
 def reset_options(opt):
     """ Deletes certain options that should always be set anew for each run
