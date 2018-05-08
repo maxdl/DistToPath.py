@@ -10,11 +10,11 @@ tool for other types of two-dimensional spatial point patterns.
 DistToPath.py is used in conjunction with its companion ImageJ plugin,
 DistToPath_.java.
 
-Please see the `website <http://www.hu.liu.se/forskning/larsson-max/software>`_ 
+Please see the `website <http://www.liu.se/medfak/forskning/larsson-max/software>`_
 for more information.
 
 License
 -------
-Copyright 2001-2014 Max Larsson `(max.larsson@liu.se) <mailto:max.larsson@liu.se>`_
+Copyright 2001-2018 Max Larsson `(max.larsson@liu.se) <mailto:max.larsson@liu.se>`_
 
 DistToPath.py is released under the MIT license.

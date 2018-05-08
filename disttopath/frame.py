@@ -117,12 +117,31 @@ class Frame(gui.MainFrame):
             self.StatusBar.SetStatusText("Current options saved to '%s'." % self.configfn)
 
     def OnStart(self, event):
+
+        def find_in_dict(s, di):
+            for key, val in di.items():
+                if key.find(s) != -1 and val:
+                    return True
+            return False
+
         if self.InputFileListCtrl.GetItemCount() == 0:
             self.show_warning("No files to process.")
             return
         self.set_options_from_ui()
         if not self.set_log():
             return
+        print(self.opt.interpoint_relations)
+        if (self.opt.determine_interpoint_dists and
+            find_in_dict('simulated', self.opt.interpoint_relations) and
+                self.opt.monte_carlo_simulation_window != 'shell'):
+            if not self.yes_no_warn_dialog("Determining interpoint distances between particles "
+                                           "and simulated points generally\ndoes not make sense "
+                                           "when using a simulation window other than 'Shell', "
+                                           "because\nalso particles outside the simulation window "
+                                           "will be considered when determining\nthese distances, "
+                                           "whereas simulated points are only generated in the "
+                                           "window.\n\nContinue anyway?\n"):
+                return
         self.StatusBar.SetStatusText("Processing...")
         self.exitcode = 1
         event_type = ""
@@ -553,7 +572,7 @@ class Frame(gui.MainFrame):
             dlg.Destroy()
 
     def show_error(self, s):
-        dlg = wx.MessageDialog(self, s, version.title, wx.OK | wx.ICON_HAND)
+        dlg = wx.MessageDialog(self, s, version.title, wx.OK | wx.ICON_ERROR)
         try:
             dlg.ShowModal()
         finally:
@@ -561,6 +580,16 @@ class Frame(gui.MainFrame):
 
     def yes_no_dialog(self, s):
         dlg = wx.MessageDialog(self, s, version.title, wx.YES_NO | wx.ICON_QUESTION | wx.NO_DEFAULT)
+        try:
+            pressed = dlg.ShowModal()
+        finally:
+            dlg.Destroy()
+        if pressed == wx.ID_YES:
+            return True
+        return False
+
+    def yes_no_warn_dialog(self, s):
+        dlg = wx.MessageDialog(self, s, version.title, wx.YES_NO | wx.ICON_WARNING | wx.NO_DEFAULT)
         try:
             pressed = dlg.ShowModal()
         finally:

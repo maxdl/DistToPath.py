@@ -1,3 +1,12 @@
+2018-05-08:
+- Fixed a critical bug, introduced in version 2.0.0, that triggered an error when
+  encountering particles with a negative distance to path.
+- Fixed a bug that caused 'Negative shell' Monte Carlo simulation window to fail.
+- Now shows a warning when determining interpoint distances between particles and
+  simulated points while using a simulation window other than 'Shell'.
+- Changed icon.
+2018-04-20:
+- Minor bug fixes and code cleanup.
 2018-04-16:
 - Now works with Python 3 instead of Python 2.
 - Added Monte Carlo simulations, interpoint distances and clusters

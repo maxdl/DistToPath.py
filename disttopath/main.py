@@ -86,7 +86,7 @@ def save_output(profileli, opt):
                           len([p for p in pro.pli 
                                if (p.is_within_shell 
                                    and (p.dist_to_path >= 0))
-                               or p.is_assocated_with_path]),
+                               or p.is_associated_with_path]),
                           len([p for p in pro.pli if p.is_associated_with_path]),
                           pro.id,
                           os.path.basename(pro.inputfn),
@@ -358,7 +358,7 @@ def main_proc(parent):
             sys.stdout.write("\nNo more input files...\n")
             break
         parent.process_queue.put(('new_file', inputfn))
-        profileli.append(ProfileData(inputfn, opt))
+        profileli.append(Profile(inputfn, opt))
         profileli[-1].process(opt)
         if opt.stop_requested:
             sys.stdout.write("\n--- Session aborted by user %s local time ---\n" 

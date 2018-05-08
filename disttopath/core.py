@@ -176,7 +176,7 @@ class PointList(list):
             raise TypeError("not a list of Point elements")
 
 
-class ClusterData(list):
+class Cluster(list):
     def __init__(self, pointli=None):
         super().__init__()
         if pointli is None:
@@ -196,7 +196,7 @@ class ClusterData(list):
         return centroid.lateral_dist_to_point(centroid2, path)
 
 
-class ProfileData:
+class Profile:
     def __init__(self, inputfn, opt):
         self.id = None
         self.inputfn = inputfn
@@ -312,37 +312,27 @@ class ProfileData:
 
     def __run_monte_carlo(self):
 
-        def is_valid(rand_p):
-            d = rand_p.dist_to_path
-            if (d is None or abs(d) >= shell_width or rand_p.is_within_hole or
-                    rand_p in mcli[n]["pli"]):
+        def in_window(p_candidate):
+            d = p_candidate.dist_to_path
+            if d is None or abs(d) >= border or p_candidate.is_within_hole:
                 return False
             if self.opt.monte_carlo_simulation_window == "shell":
                 return True
             elif self.opt.monte_carlo_simulation_window == "positive shell" and d >= 0:
                 return True
-            elif self.opt.monte_carlo_simulation_window == "negative shell" and -d <= 0:
+            elif self.opt.monte_carlo_simulation_window == "negative shell" and d <= 0:
                 return True
             return False
 
-        pli = self.pli
-        if self.opt.monte_carlo_simulation_window == "shell":
-            # particles outside shell have been discarded
-            numpoints = len(pli)
-        elif self.opt.monte_carlo_simulation_window == "positive shell":
-            numpoints = len([p for p in pli if p.dist_to_path >= 0])
-        elif self.opt.monte_carlo_simulation_window == "negative shell":
-            numpoints = len([p for p in pli if p.dist_to_path <= 0])
-        else:
-            return []
+        border = geometry.to_pixel_units(self.opt.shell_width, self.pixelwidth)
+        numpoints = len([p for p in self.pli if in_window(p)])
         box = self.path.bounding_box()
-        shell_width = geometry.to_pixel_units(self.opt.shell_width, self.pixelwidth)
         mcli = []
-        # dot_progress(reset=True)
+        dot_progress(reset=True)
         for n in range(0, self.opt.monte_carlo_runs):
             if self.opt.stop_requested:
                 return []
-            # dot_progress()
+            dot_progress()
             mcli.append({'pli': [],
                          'simulated - simulated': {'dist': [], 'latdist': []},
                          'simulated - particle': {'dist': [], 'latdist': []},
@@ -350,10 +340,10 @@ class ProfileData:
                          'clusterli': []})
             for __ in range(0, numpoints):
                 while True:
-                    x = random.randint(int(box[0].x - shell_width), int(box[1].x + shell_width) + 1)
-                    y = random.randint(int(box[0].y - shell_width), int(box[2].y + shell_width) + 1)
+                    x = random.randint(int(box[0].x - border), int(box[1].x + border) + 1)
+                    y = random.randint(int(box[0].y - border), int(box[2].y + border) + 1)
                     p = Point(x, y, profile=self)
-                    if is_valid(p):
+                    if p not in mcli[n]['pli'] and in_window(p):
                         break
                 # escape the while loop when a valid simulated point
                 # is found
@@ -365,11 +355,11 @@ class ProfileData:
                 mcli[n]['simulated - simulated']['dist'].append(distlis[0])
                 mcli[n]['simulated - simulated']['latdist'].append(distlis[1])
             if self.opt.interpoint_relations['simulated - particle']:
-                distlis = self.__get_interpoint_distances2(mcli[n]['pli'], pli)
+                distlis = self.__get_interpoint_distances2(mcli[n]['pli'], self.pli)
                 mcli[n]['simulated - particle']['dist'].append(distlis[0])
                 mcli[n]['simulated - particle']['latdist'].append(distlis[1])
             if self.opt.interpoint_relations['particle - simulated']:
-                distlis = self.__get_interpoint_distances2(pli, mcli[n]['pli'])
+                distlis = self.__get_interpoint_distances2(self.pli, mcli[n]['pli'])
                 mcli[n]['particle - simulated']['dist'].append(distlis[0])
                 mcli[n]['particle - simulated']['latdist'].append(distlis[1])
         if self.opt.determine_clusters:
@@ -389,7 +379,7 @@ class ProfileData:
         for c in clusterli:
             if self.opt.stop_requested:
                 return
-            c.nearest_cluster = ClusterData()
+            c.nearest_cluster = Cluster()
             if len(clusterli) == 1:
                 c.dist_to_nearest_cluster = -1
                 return
@@ -424,7 +414,7 @@ class ProfileData:
                         break
             else:
                 p1.cluster = len(clusterli)
-                clusterli.append(ClusterData([p1]))
+                clusterli.append(Cluster([p1]))
         self.__process_clusters(clusterli)
         return clusterli
 
