@@ -1,8 +1,8 @@
 import os.path
 import sys
 
-version = "2.0.1"
-date = ("April", "20", "2018")
+version = "2.0.2"
+date = ("May", "8", "2018")
 title = "DistToPath"
 author = "Max Larsson"
 email = "max.larsson@liu.se"
