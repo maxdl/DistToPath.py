@@ -130,7 +130,6 @@ class Frame(gui.MainFrame):
         self.set_options_from_ui()
         if not self.set_log():
             return
-        print(self.opt.interpoint_relations)
         if (self.opt.determine_interpoint_dists and
             find_in_dict('simulated', self.opt.interpoint_relations) and
                 self.opt.monte_carlo_simulation_window != 'shell'):
@@ -549,11 +548,11 @@ class Frame(gui.MainFrame):
                     if self.IfLogExistsRadioBox.GetStringSelection() == "Enumerate":
                         logfn = file_io.enum_filename(logfn, 2)
                     else:
-                        f = open(logfn, "a", 0)
+                        f = open(logfn, 'a')
                         f.close()
                 # ok, so file doesn't exist but check if name is valid
                 else:
-                    f = open(logfn, "w", 0)
+                    f = open(logfn, 'w')
                     f.close()
             except IOError:
                 self.show_error("Could not write to log file. Please choose another filename.")
@@ -630,11 +629,11 @@ class LogQueue:
             self.errstr = "* Error: could not write to log file: %s\n" % self.fn        
             if mode == 'Append':
                 try:
-                    f = open(self.fn, "a", 0)
+                    f = open(self.fn, "a")
                     f.close()
                 except IOError:
                     try:
-                        f = open(self.fn, "w", 0)
+                        f = open(self.fn, "w")
                         f.close()
                     except IOError:
                         sys.stderr.write(self.errstr)
